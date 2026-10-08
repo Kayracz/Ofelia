@@ -5,10 +5,11 @@ import { useCart } from "../context/useCart";
 function Checkout() {
   const navigate = useNavigate();
 
-  const {
-    items,
-    totalPrice,
-  } = useCart();
+const {
+  items,
+  totalPrice,
+  clearCart,
+} = useCart();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -35,30 +36,32 @@ function Checkout() {
     }));
   };
 
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
+const handleSubmit = (
+  event: React.FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault();
 
-    const orderNumber = `OF-${Math.floor(
-      100000 + Math.random() * 900000
-    )}`;
+  const orderNumber = `OF-${Math.floor(
+    100000 + Math.random() * 900000
+  )}`;
 
-    const order = {
-      orderNumber,
-      ...formData,
-      items,
-      totalPrice,
-      createdAt: new Date().toISOString(),
-    };
-
-    localStorage.setItem(
-      "ofelia-order",
-      JSON.stringify(order)
-    );
-
-    navigate("/confirmacion");
+  const order = {
+    orderNumber,
+    ...formData,
+    items,
+    totalPrice,
+    createdAt: new Date().toISOString(),
   };
+
+  localStorage.setItem(
+    "ofelia-order",
+    JSON.stringify(order)
+  );
+
+  clearCart();
+
+  navigate("/confirmacion");
+};
 
   if (items.length === 0) {
     return (
@@ -74,6 +77,8 @@ function Checkout() {
         </Link>
       </section>
     );
+
+    clearCart();
   }
 
   return (
