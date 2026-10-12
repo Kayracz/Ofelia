@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 
 interface Order {
@@ -15,6 +16,7 @@ interface Order {
   createdAt: string;
   items: {
     product: {
+      id?: number;
       name: string;
       price: number;
     };
@@ -23,14 +25,12 @@ interface Order {
 }
 
 function getSavedOrder(): Order | null {
-  const savedOrder = localStorage.getItem("ofelia-order");
-
-  if (!savedOrder) {
-    return null;
-  }
-
   try {
-    return JSON.parse(savedOrder);
+    const savedOrder = localStorage.getItem("ofelia-order");
+
+    if (!savedOrder) return null;
+
+    return JSON.parse(savedOrder) as Order;
   } catch {
     return null;
   }
@@ -41,15 +41,14 @@ function OrderConfirmation() {
 
   if (!order) {
     return (
-      <section>
-        <h1>NO HAY PEDIDO</h1>
-
+      <section className="confirmation-empty">
+        <p className="eyebrow">OFELIA · CUSTOMER CARE</p>
+        <h1>No encontramos tu pedido.</h1>
         <p>
-          No encontramos información del pedido.
+          Puedes volver a la colección para preparar tu compra.
         </p>
-
-        <Link to="/productos">
-          VOLVER A PRODUCTOS
+        <Link to="/productos" className="confirmation-button">
+          VOLVER A LA COLECCIÓN <span>↗</span>
         </Link>
       </section>
     );
@@ -57,107 +56,175 @@ function OrderConfirmation() {
 
   const whatsappNumber = "59178000375";
 
-  const message = `
-Hola, quiero confirmar mi pedido en OFELIA.
-
-Pedido:
-${order.orderNumber}
-
-Cliente:
-${order.name} ${order.lastName}
-
-Teléfono:
-${order.phone}
-
-Productos:
-${order.items
-  .map(
-    (item) =>
-      `${item.product.name} x${item.quantity} - ${
-        item.product.price * item.quantity
-      } USD`
-  )
-  .join("\n")}
-
-Total:
-${order.totalPrice} USD
-
-Entrega:
-${order.delivery === "envio" ? "Envío" : "Retiro"}
-
-Dirección:
-${order.address}
-
-Ciudad:
-${order.city}
-
-Departamento:
-${order.department}
-
-Referencia:
-${order.reference || "Sin referencia"}
-  `.trim();
+  const message = [
+    "Hola, quiero coordinar mi pedido en OFELIA.",
+    "",
+    `Pedido: ${order.orderNumber}`,
+    `Cliente: ${order.name} ${order.lastName}`,
+    `Teléfono: ${order.phone}`,
+    `Email: ${order.email}`,
+    "",
+    "PRODUCTOS",
+    ...order.items.map(
+      (item) =>
+        `${item.product.name} x${item.quantity} — ${
+          item.product.price * item.quantity
+        } USD`
+    ),
+    "",
+    `Subtotal: ${order.totalPrice} USD`,
+    `Entrega: ${order.delivery === "envio" ? "Envío" : "Retiro"}`,
+    `Departamento: ${order.department}`,
+    `Ciudad: ${order.city}`,
+    `Dirección: ${order.address || "Por coordinar"}`,
+    `Referencia: ${order.reference || "Sin referencia"}`,
+    "",
+    "Quedo pendiente de los detalles de pago y entrega. ¡Gracias!",
+  ].join("\n");
 
   const whatsappUrl =
-    `https://wa.me/${whatsappNumber}` +
-    `?text=${encodeURIComponent(message)}`;
+    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <section>
-      <div>
-        <p>GRACIAS POR TU COMPRA</p>
+    <main className="confirmation-page">
+      <div className="confirmation-top">
+        <div className="confirmation-check" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="25"
+            height="25"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+        </div>
 
-        <h1>PEDIDO CONFIRMADO</h1>
-
-        <p>
-          Tu pedido ha sido registrado correctamente.
+        <p className="eyebrow">THANK YOU FOR CHOOSING OFELIA</p>
+        <h1>Tu pedido está registrado.</h1>
+        <p className="confirmation-intro">
+          Gracias por elegirnos. El siguiente paso es coordinar
+          el pago y la entrega de tu pedido.
         </p>
-
-        <div>
-          <p>NÚMERO DE PEDIDO</p>
-
-          <strong>
-            {order.orderNumber}
-          </strong>
-        </div>
-
-        <div>
-          <h2>RESUMEN</h2>
-
-          {order.items.map((item) => (
-            <div key={item.product.name}>
-              <span>
-                {item.product.name}
-              </span>
-
-              <span>
-                x{item.quantity}
-              </span>
-
-              <span>
-                {item.product.price * item.quantity} USD
-              </span>
-            </div>
-          ))}
-
-          <strong>
-            TOTAL {order.totalPrice} USD
-          </strong>
-        </div>
-
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          CONFIRMAR POR WHATSAPP
-        </a>
-
-        <Link to="/productos">
-          SEGUIR COMPRANDO
-        </Link>
       </div>
-    </section>
+
+      <div className="confirmation-layout">
+        <section className="confirmation-details">
+          <div className="confirmation-order-number">
+            <span>NÚMERO DE PEDIDO</span>
+            <strong>{order.orderNumber}</strong>
+          </div>
+
+          <div className="confirmation-status">
+            <span className="status-dot" />
+            <div>
+              <strong>Pendiente de coordinación</strong>
+              <p>
+                Tu pedido está registrado. El pago aún no está confirmado.
+              </p>
+            </div>
+          </div>
+
+          <div className="confirmation-section">
+            <h2>Tu selección</h2>
+
+            {order.items.map((item, index) => (
+              <div
+                className="confirmation-item"
+                key={`${item.product.name}-${index}`}
+              >
+                <div className="confirmation-item-image">
+                  <span>OFELIA</span>
+                </div>
+
+                <div className="confirmation-item-info">
+                  <strong>{item.product.name}</strong>
+                  <span>Cantidad: {item.quantity}</span>
+                </div>
+
+                <span className="confirmation-item-price">
+                  {item.product.price * item.quantity} USD
+                </span>
+              </div>
+            ))}
+
+            <div className="confirmation-total">
+              <span>Subtotal de productos</span>
+              <strong>{order.totalPrice} USD</strong>
+            </div>
+
+            <p className="confirmation-shipping-note">
+              El coste de envío, si corresponde, se confirmará
+              al coordinar la entrega.
+            </p>
+          </div>
+
+          <div className="confirmation-section">
+            <h2>Datos de entrega</h2>
+
+            <div className="confirmation-address">
+              <p>
+                <span>Cliente</span>
+                {order.name} {order.lastName}
+              </p>
+              <p>
+                <span>Contacto</span>
+                {order.phone}
+              </p>
+              <p>
+                <span>Método</span>
+                {order.delivery === "envio" ? "Envío" : "Retiro"}
+              </p>
+              <p>
+                <span>Ubicación</span>
+                {[order.address, order.city, order.department]
+                  .filter(Boolean)
+                  .join(", ") || "Por coordinar"}
+              </p>
+              {order.reference && (
+                <p>
+                  <span>Referencia</span>
+                  {order.reference}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <aside className="confirmation-next">
+          <p className="eyebrow">WHAT HAPPENS NEXT</p>
+          <h2>Hablemos por WhatsApp.</h2>
+          <p>
+            Escríbenos para coordinar el método de pago,
+            el envío y cualquier detalle de tu pedido.
+          </p>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="confirmation-button"
+          >
+            CONTINUAR POR WHATSAPP <span>↗</span>
+          </a>
+
+          <p className="confirmation-small-note">
+            Tu pedido no se considera pagado hasta que confirmemos
+            la recepción del pago.
+          </p>
+
+          <div className="confirmation-divider" />
+
+          <p className="eyebrow">NEED ANYTHING ELSE?</p>
+          <Link to="/productos" className="confirmation-back-link">
+            SEGUIR EXPLORANDO <span>↗</span>
+          </Link>
+        </aside>
+      </div>
+    </main>
   );
 }
 
