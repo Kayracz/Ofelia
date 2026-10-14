@@ -1,6 +1,6 @@
 
 import { Link, useSearchParams } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../context/useProducts";
 
 const categories = [
   { label: "TODOS", value: "" },
@@ -11,6 +11,7 @@ const categories = [
 ];
 
 function Products() {
+  const { products } = useProducts();
   const [searchParams] = useSearchParams();
 
   const category = searchParams.get("categoria") ?? "";

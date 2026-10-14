@@ -1,8 +1,9 @@
 
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../context/useProducts";
 
 function AdminDashboard() {
+  const { products } = useProducts();
   const newProducts = products.filter((product) => product.isNew).length;
 
   const categories = new Set(products.map((product) => product.category));

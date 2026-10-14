@@ -1,8 +1,9 @@
 
+import { useProducts } from "../context/useProducts";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
 
 function Home() {
+  const { products } = useProducts();
   const newProducts = products
     .filter((product) => product.isNew)
     .slice(0, 4);

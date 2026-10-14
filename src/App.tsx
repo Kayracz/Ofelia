@@ -1,10 +1,13 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 
 import StoreLayout from "./layouts/StoreLayout";
+
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminPlaceholder from "./admin/AdminPlaceholder";
+import AdminProducts from "./admin/AdminProducts";
+import AdminProductForm from "./admin/AdminProductForm";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -14,9 +17,33 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 
+function AdminProductFormRoute() {
+  const { id } = useParams();
+
+  return <AdminProductForm key={id ?? "new"} />;
+}
+
 function App() {
   return (
     <Routes>
+      {/* ADMINISTRACIÓN */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="pedidos" element={<AdminPlaceholder />} />
+        <Route path="productos" element={<AdminProducts />} />
+
+        <Route
+          path="productos/nuevo"
+          element={<AdminProductFormRoute />}
+        />
+
+        <Route
+          path="productos/editar/:id"
+          element={<AdminProductFormRoute />}
+        />
+      </Route>
+
+      {/* TIENDA PÚBLICA */}
       <Route element={<StoreLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
@@ -26,14 +53,6 @@ function App() {
         <Route path="/carrito" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/confirmacion" element={<OrderConfirmation />} />
-      </Route>
-
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="productos" element={<AdminPlaceholder />} />
-        <Route path="productos/nuevo" element={<AdminPlaceholder />} />
-        <Route path="productos/editar/:id" element={<AdminPlaceholder />} />
-        <Route path="pedidos" element={<AdminPlaceholder />} />
       </Route>
     </Routes>
   );
