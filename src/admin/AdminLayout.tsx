@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
 const adminLinks = [
   { label: "Dashboard", to: "/admin", icon: "⌂", end: true },
   { label: "Productos", to: "/admin/productos", icon: "◇" },
+  { label: "Imágenes", to: "/admin/imagenes", icon: "▧" },
   { label: "Pedidos", to: "/admin/pedidos", icon: "▤" },
 ];
 
@@ -22,7 +22,9 @@ function AdminLayout() {
         />
       )}
 
-      <aside className={`admin-sidebar ${menuOpen ? "is-open" : ""}`}>
+      <aside
+        className={`admin-sidebar ${menuOpen ? "is-open" : ""}`}
+      >
         <NavLink
           to="/admin"
           className="admin-brand"
@@ -66,7 +68,9 @@ function AdminLayout() {
           <button
             type="button"
             className="admin-menu-button"
-            aria-label={menuOpen ? "Cerrar navegación" : "Abrir navegación"}
+            aria-label={
+              menuOpen ? "Cerrar navegación" : "Abrir navegación"
+            }
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
           >

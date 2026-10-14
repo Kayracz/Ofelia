@@ -2,6 +2,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { SiteImagesProvider } from "./context/SiteImagesContext";
 
 import App from "./App";
 import { CartProvider } from "./context/CartContext";
@@ -11,12 +12,14 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ProductsProvider>
+   <BrowserRouter>
+    <ProductsProvider>
+      <SiteImagesProvider>
         <CartProvider>
           <App />
         </CartProvider>
-      </ProductsProvider>
-    </BrowserRouter>
+      </SiteImagesProvider>
+    </ProductsProvider>
+  </BrowserRouter>
   </StrictMode>
 );

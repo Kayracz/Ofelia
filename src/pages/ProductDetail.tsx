@@ -1,5 +1,6 @@
-
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+
 import { useCart } from "../context/useCart";
 import { useProducts } from "../context/useProducts";
 
@@ -11,6 +12,16 @@ function ProductDetail() {
   const product = products.find(
     (item) => item.name.toLowerCase() === slug
   );
+
+  const galleryImages = product
+    ? product.images?.length
+      ? product.images
+      : product.imageUrl
+        ? [product.imageUrl]
+        : []
+    : [];
+
+  const [activeImage, setActiveImage] = useState(() => 0);
 
   if (!product) {
     return (
@@ -44,10 +55,10 @@ function ProductDetail() {
       <section className="product-detail">
         <div className="product-gallery">
           <div className="product-main-image">
-            {product.imageUrl ? (
+            {galleryImages.length > 0 ? (
               <img
-                src={product.imageUrl}
-                alt={product.name}
+                src={galleryImages[activeImage] ?? galleryImages[0]}
+                alt={`${product.name} - fotografía ${activeImage + 1}`}
                 className="product-detail-image"
               />
             ) : (
@@ -59,18 +70,35 @@ function ProductDetail() {
             )}
 
             <span className="detail-image-note">
-              IMAGEN PRINCIPAL · 01
+              {`IMAGEN · ${String(activeImage + 1).padStart(2, "0")}`}
             </span>
           </div>
 
-          <div className="product-secondary-images">
-            <div>
-              <span>DETAIL IMAGE 02</span>
+          {galleryImages.length > 1 && (
+            <div
+              className="product-secondary-images"
+              aria-label="Galería de fotografías"
+            >
+              {galleryImages.map((image, index) => (
+                <button
+                  type="button"
+                  key={image}
+                  className={`product-thumbnail ${
+                    activeImage === index ? "is-active" : ""
+                  }`}
+                  onClick={() => setActiveImage(index)}
+                  aria-label={`Ver fotografía ${index + 1}`}
+                  aria-pressed={activeImage === index}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.name}, vista ${index + 1}`}
+                    loading="lazy"
+                  />
+                </button>
+              ))}
             </div>
-            <div>
-              <span>DETAIL IMAGE 03</span>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="product-detail-info">
@@ -113,8 +141,8 @@ function ProductDetail() {
               </summary>
               <p>
                 Una pieza diseñada para aportar un detalle especial
-                a tu estilo. Más información sobre materiales,
-                medidas y cuidados estará disponible próximamente.
+                a tu estilo. Consulta la descripción para conocer
+                los detalles disponibles de cada diseño.
               </p>
             </details>
 
@@ -153,33 +181,38 @@ function ProductDetail() {
           {products
             .filter((item) => item.id !== product.id)
             .slice(0, 3)
-            .map((item) => (
-              <Link
-                to={`/productos/${item.name.toLowerCase()}`}
-                key={item.id}
-                className="product-more-card"
-              >
-                <div className="product-more-placeholder">
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      className="product-more-image"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span>PRODUCT IMAGE</span>
-                  )}
-                </div>
+            .map((item) => {
+              const itemImage =
+                item.images?.[0] || item.imageUrl || "";
 
-                <div className="product-more-info">
-                  <span>{item.name}</span>
-                  <span>
-                    Bs {item.price.toLocaleString("es-BO")}
-                  </span>
-                </div>
-              </Link>
-            ))}
+              return (
+                <Link
+                  to={`/productos/${item.name.toLowerCase()}`}
+                  key={item.id}
+                  className="product-more-card"
+                >
+                  <div className="product-more-placeholder">
+                    {itemImage ? (
+                      <img
+                        src={itemImage}
+                        alt={item.name}
+                        className="product-more-image"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span>PRODUCT IMAGE</span>
+                    )}
+                  </div>
+
+                  <div className="product-more-info">
+                    <span>{item.name}</span>
+                    <span>
+                      Bs {item.price.toLocaleString("es-BO")}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
         </div>
       </section>
     </div>
