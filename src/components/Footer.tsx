@@ -55,7 +55,7 @@ function Footer() {
           <h3>CONTACTO</h3>
 
           <p>
-            Lorem ipsum dolor sit amet.
+            Tiktok
           </p>
 
           <p>
