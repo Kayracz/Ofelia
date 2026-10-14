@@ -4,7 +4,7 @@ import { useCart } from "../context/useCart";
 import { useProducts } from "../context/useProducts";
 
 function ProductDetail() {
-   const { products } = useProducts();
+  const { products } = useProducts();
   const { slug } = useParams();
   const { addToCart } = useCart();
 
@@ -24,6 +24,13 @@ function ProductDetail() {
     );
   }
 
+  const categoryLabel =
+    product.category === "panolletas"
+      ? "SILK SCARF"
+      : product.category === "flecos"
+        ? "FRINGED SCARF"
+        : "SILK TWILLY";
+
   return (
     <div className="product-detail-page">
       <nav className="product-breadcrumb" aria-label="Ruta de navegación">
@@ -37,10 +44,20 @@ function ProductDetail() {
       <section className="product-detail">
         <div className="product-gallery">
           <div className="product-main-image">
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="product-detail-image"
+              />
+            ) : (
+              <span>PRODUCT IMAGE</span>
+            )}
+
             {product.isNew && (
               <span className="detail-new-label">NEW IN</span>
             )}
-            <span>PRODUCT IMAGE</span>
+
             <span className="detail-image-note">
               IMAGEN PRINCIPAL · 01
             </span>
@@ -57,18 +74,12 @@ function ProductDetail() {
         </div>
 
         <div className="product-detail-info">
-          <p className="eyebrow">
-            {product.category === "panolletas"
-              ? "SILK SCARF"
-              : product.category === "flecos"
-                ? "FRINGED SCARF"
-                : "SILK TWILLY"}
-          </p>
+          <p className="eyebrow">{categoryLabel}</p>
 
           <h1>{product.name}</h1>
 
           <p className="product-detail-price">
-            {product.price} USD
+            Bs {product.price.toLocaleString("es-BO")}
           </p>
 
           <div className="product-detail-divider" />
@@ -97,7 +108,9 @@ function ProductDetail() {
 
           <div className="product-accordions">
             <details>
-              <summary>DETALLES DEL PRODUCTO <span>+</span></summary>
+              <summary>
+                DETALLES DEL PRODUCTO <span>+</span>
+              </summary>
               <p>
                 Una pieza diseñada para aportar un detalle especial
                 a tu estilo. Más información sobre materiales,
@@ -106,7 +119,9 @@ function ProductDetail() {
             </details>
 
             <details>
-              <summary>ENVÍOS Y ENTREGAS <span>+</span></summary>
+              <summary>
+                ENVÍOS Y ENTREGAS <span>+</span>
+              </summary>
               <p>
                 Los detalles de envío, tiempos de entrega y opciones
                 de retiro se confirmarán al realizar tu pedido.
@@ -114,7 +129,9 @@ function ProductDetail() {
             </details>
 
             <details>
-              <summary>CUIDADO DE LA PIEZA <span>+</span></summary>
+              <summary>
+                CUIDADO DE LA PIEZA <span>+</span>
+              </summary>
               <p>
                 Consulta las instrucciones de cuidado específicas
                 de cada pieza antes de limpiarla.
@@ -143,11 +160,23 @@ function ProductDetail() {
                 className="product-more-card"
               >
                 <div className="product-more-placeholder">
-                  <span>PRODUCT IMAGE</span>
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="product-more-image"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span>PRODUCT IMAGE</span>
+                  )}
                 </div>
+
                 <div className="product-more-info">
                   <span>{item.name}</span>
-                  <span>{item.price} USD</span>
+                  <span>
+                    Bs {item.price.toLocaleString("es-BO")}
+                  </span>
                 </div>
               </Link>
             ))}

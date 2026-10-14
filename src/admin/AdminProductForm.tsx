@@ -7,12 +7,16 @@ import { useProducts } from "../context/useProducts";
 
 type ProductFormData = Omit<Product, "id">;
 
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
 const emptyProduct: ProductFormData = {
   name: "",
   category: "panolletas",
   price: 0,
   isNew: false,
   description: "",
+  imageUrl: "",
 };
 
 function AdminProductForm() {
@@ -26,9 +30,7 @@ function AdminProductForm() {
     : undefined;
 
   const [formData, setFormData] = useState<ProductFormData>(() => {
-    if (!existingProduct) {
-      return { ...emptyProduct };
-    }
+    if (!existingProduct) return { ...emptyProduct };
 
     return {
       name: existingProduct.name,
@@ -36,8 +38,13 @@ function AdminProductForm() {
       price: existingProduct.price,
       isNew: existingProduct.isNew,
       description: existingProduct.description,
+      imageUrl: existingProduct.imageUrl ?? "",
     };
   });
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const notFound = Boolean(id && !existingProduct);
 
@@ -64,7 +71,6 @@ function AdminProductForm() {
         ...current,
         category: value as Product["category"],
       }));
-
       return;
     }
 
@@ -73,7 +79,6 @@ function AdminProductForm() {
         ...current,
         price: value === "" ? 0 : Number(value),
       }));
-
       return;
     }
 
@@ -85,8 +90,84 @@ function AdminProductForm() {
     }
   }
 
+  async function handleImageChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    setUploadError("");
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Selecciona un archivo de imagen válido.");
+      return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setUploadError("Usa una imagen JPG, PNG o WebP.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("La imagen no puede superar los 5 MB.");
+      return;
+    }
+
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+      setUploadError(
+        "Falta configurar Cloudinary en el archivo .env."
+      );
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("upload_preset", UPLOAD_PRESET);
+      body.append("folder", "ofelia/products");
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body,
+        }
+      );
+
+      const result: {
+        secure_url?: string;
+        error?: { message?: string };
+      } = await response.json();
+
+      if (!response.ok || !result.secure_url) {
+        throw new Error(
+          result.error?.message || "No se pudo subir la imagen."
+        );
+      }
+
+      setFormData((current) => ({
+        ...current,
+        imageUrl: result.secure_url!,
+      }));
+    } catch (error) {
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error al subir la imagen."
+      );
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (uploading || saving) return;
 
     const cleanedProduct: ProductFormData = {
       ...formData,
@@ -104,15 +185,20 @@ function AdminProductForm() {
       return;
     }
 
-    if (id) {
-      if (!existingProduct) return;
+    setSaving(true);
 
-      updateProduct(existingProduct.id, cleanedProduct);
-    } else {
-      addProduct(cleanedProduct);
+    try {
+      if (id) {
+        if (!existingProduct) return;
+        updateProduct(existingProduct.id, cleanedProduct);
+      } else {
+        addProduct(cleanedProduct);
+      }
+
+      navigate("/admin/productos");
+    } finally {
+      setSaving(false);
     }
-
-    navigate("/admin/productos");
   }
 
   if (notFound) {
@@ -120,11 +206,7 @@ function AdminProductForm() {
       <section className="admin-form-page">
         <h1>Producto no encontrado</h1>
         <p>Puede que el producto haya sido eliminado.</p>
-
-        <Link
-          to="/admin/productos"
-          className="admin-text-action"
-        >
+        <Link to="/admin/productos" className="admin-text-action">
           Volver a productos
         </Link>
       </section>
@@ -136,12 +218,8 @@ function AdminProductForm() {
       <div className="admin-page-heading">
         <div>
           <span className="admin-eyebrow">CATÁLOGO OFELIA</span>
-
           <h1>{id ? "Editar producto" : "Nuevo producto"}</h1>
-
-          <p>
-            Completa la información que se mostrará en tu tienda.
-          </p>
+          <p>Completa la información que se mostrará en tu tienda.</p>
         </div>
       </div>
 
@@ -208,9 +286,59 @@ function AdminProductForm() {
               checked={formData.isNew}
               onChange={handleChange}
             />
-
             <span>Destacar como New In</span>
           </label>
+        </div>
+
+        <div className="admin-form-section">
+          <h2>Fotografía del producto</h2>
+          <p>Formatos JPG, PNG o WebP. Máximo 5 MB.</p>
+
+          {formData.imageUrl && (
+            <div className="admin-image-preview">
+              <img
+                src={formData.imageUrl}
+                alt={`Vista previa de ${formData.name || "tu producto"}`}
+              />
+
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() =>
+                  setFormData((current) => ({
+                    ...current,
+                    imageUrl: "",
+                  }))
+                }
+                disabled={uploading}
+              >
+                Quitar imagen
+              </button>
+            </div>
+          )}
+
+          <label className="admin-upload-label">
+            {uploading ? "Subiendo imagen..." : "Seleccionar fotografía"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
+              disabled={uploading}
+            />
+          </label>
+
+          {uploading && <p>Estamos subiendo tu fotografía a Cloudinary…</p>}
+
+          {uploadError && (
+            <p className="admin-upload-error" role="alert">
+              {uploadError}
+            </p>
+          )}
+
+          <p className="admin-upload-help">
+            La imagen se sube al seleccionarla. Guarda el producto para
+            conservar su URL en el catálogo.
+          </p>
         </div>
 
         <div className="admin-form-actions">
@@ -224,8 +352,15 @@ function AdminProductForm() {
           <button
             type="submit"
             className="admin-primary-button"
+            disabled={uploading || saving}
           >
-            {id ? "Guardar cambios" : "Crear producto"}
+            {uploading
+              ? "Subiendo imagen..."
+              : saving
+                ? "Guardando..."
+                : id
+                  ? "Guardar cambios"
+                  : "Crear producto"}
           </button>
         </div>
       </form>

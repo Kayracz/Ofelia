@@ -36,9 +36,7 @@ function Products() {
       <div className="catalog-heading">
         <p className="eyebrow">THE OFELIA COLLECTION</p>
         <h1>Silk, in your own way.</h1>
-        <p>
-          Piezas para llevar, regalar y hacer tuyas.
-        </p>
+        <p>Piezas para llevar, regalar y hacer tuyas.</p>
       </div>
 
       <div className="catalog-toolbar">
@@ -81,13 +79,22 @@ function Products() {
               key={product.id}
             >
               <div className="catalog-image-placeholder">
+                {product.imageUrl ? (
+                  <img
+                    className="catalog-product-image"
+                    src={product.imageUrl}
+                    alt={product.name}
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="catalog-placeholder-label">
+                    PRODUCT IMAGE
+                  </span>
+                )}
+
                 {product.isNew && (
                   <span className="catalog-new-label">NEW</span>
                 )}
-
-                <span className="catalog-placeholder-label">
-                  PRODUCT IMAGE
-                </span>
 
                 <span className="catalog-product-number">
                   {String(index + 1).padStart(2, "0")}
@@ -96,7 +103,7 @@ function Products() {
 
               <div className="catalog-product-info">
                 <h2>{product.name}</h2>
-                <p>{product.price} USD</p>
+                <p>Bs {product.price.toLocaleString("es-BO")}</p>
               </div>
             </Link>
           ))}

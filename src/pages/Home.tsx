@@ -1,9 +1,9 @@
-
-import { useProducts } from "../context/useProducts";
 import { Link } from "react-router-dom";
+import { useProducts } from "../context/useProducts";
 
 function Home() {
   const { products } = useProducts();
+
   const newProducts = products
     .filter((product) => product.isNew)
     .slice(0, 4);
@@ -34,30 +34,51 @@ function Home() {
             <p className="eyebrow">DISCOVER OUR SELECTION</p>
             <h2>New in</h2>
           </div>
+
           <Link to="/productos?new=true" className="text-link">
             VIEW ALL <span>↗</span>
           </Link>
         </div>
 
-        <div className="home-product-grid">
-          {newProducts.map((product, index) => (
-            <Link
-              to={`/productos/${product.name.toLowerCase()}`}
-              className="home-product"
-              key={product.id}
-            >
-              <div className="product-image-placeholder">
-                <span>PRODUCT IMAGE</span>
-                <span>0{index + 1}</span>
-              </div>
+        {newProducts.length > 0 ? (
+          <div className="home-product-grid">
+            {newProducts.map((product, index) => (
+              <Link
+                to={`/productos/${product.name.toLowerCase()}`}
+                className="home-product"
+                key={product.id}
+              >
+                <div className="product-image-placeholder">
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="home-product-image"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span>PRODUCT IMAGE</span>
+                  )}
 
-              <div className="product-info">
-                <h3>{product.name}</h3>
-                <p>{product.price} USD</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+                  <span className="home-product-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p>
+                    Bs {product.price.toLocaleString("es-BO")}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="home-new-empty">
+            Próximamente descubrirás nuevas piezas de OFELIA.
+          </p>
+        )}
       </section>
 
       <section className="home-story section-spacing">
@@ -99,7 +120,7 @@ function Home() {
           ].map((style, index) => (
             <div className="styling-item" key={style}>
               <div className="styling-image-placeholder">
-                <span>STYLING 0{index + 1}</span>
+                <span>STYLING {String(index + 1).padStart(2, "0")}</span>
               </div>
               <p>{style}</p>
             </div>
@@ -116,12 +137,22 @@ function Home() {
         </p>
 
         <div className="community-links">
-          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
+          <a
+            href="https://www.instagram.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
             INSTAGRAM ↗
           </a>
-          <a href="https://wa.me/59170000000" target="_blank" rel="noreferrer">
+
+          <a
+            href="https://wa.me/59170000000"
+            target="_blank"
+            rel="noreferrer"
+          >
             WHATSAPP ↗
           </a>
+
           <Link to="/productos">SHOP OFELIA ↗</Link>
         </div>
       </section>

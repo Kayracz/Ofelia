@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   isNew: boolean;
   description: string;
+  imageUrl?: string;
 }
 
 export const products: Product[] = [
