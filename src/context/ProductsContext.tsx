@@ -1,10 +1,12 @@
-
+ 
 import { useEffect, useState, type ReactNode } from "react";
 
 import {
   products as initialProducts,
   type Product,
 } from "../data/products";
+
+import { getProducts } from "../services/productService";
 
 import {
   ProductsContext,
@@ -39,6 +41,42 @@ interface ProductsProviderProps {
 
 export function ProductsProvider({ children }: ProductsProviderProps) {
   const [products, setProducts] = useState<Product[]>(getInitialProducts);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProducts() {
+      try {
+        const apiProducts = await getProducts();
+
+        if (cancelled) return;
+
+        const normalizedProducts: Product[] = apiProducts.map((product) => ({
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          isNew: product.isNew,
+          description: product.description,
+          imageUrl: product.imageUrl,
+          images: product.images,
+        }));
+
+        setProducts(normalizedProducts);
+      } catch (error) {
+        console.error(
+          "No se pudieron cargar los productos de la API. Se conserva el catálogo local.",
+          error
+        );
+      }
+    }
+
+    void loadProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     try {
