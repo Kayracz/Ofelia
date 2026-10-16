@@ -1,3 +1,4 @@
+
 import { createContext } from "react";
 import type { SiteImages } from "./SiteImagesContext";
 
@@ -6,8 +7,11 @@ export interface SiteImagesContextValue {
   updateImage: (
     key: "heroImage" | "storyImage",
     url: string
-  ) => void;
-  updateStylingImage: (index: number, url: string) => void;
+  ) => Promise<void>;
+  updateStylingImage: (
+    index: number,
+    url: string
+  ) => Promise<void>;
 }
 
 export const SiteImagesContext =

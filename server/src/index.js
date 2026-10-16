@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const siteImageRoutes = require("./routes/siteImageRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/site-images", siteImageRoutes);
 
 app.get("/", (req, res) => {
   res.json({

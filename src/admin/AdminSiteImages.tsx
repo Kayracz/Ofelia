@@ -116,15 +116,16 @@ function AdminSiteImages() {
         );
       }
 
-      if (slot.type === "hero") {
-        updateImage("heroImage", result.secure_url);
-      } else if (slot.type === "story") {
-        updateImage("storyImage", result.secure_url);
-      } else if (typeof slot.index === "number") {
-        updateStylingImage(slot.index, result.secure_url);
-      }
+        if (slot.type === "hero") {
+        await updateImage("heroImage", result.secure_url);
+        } else if (slot.type === "story") {
+        await updateImage("storyImage", result.secure_url);
+        } else if (typeof slot.index === "number") {
+        await updateStylingImage(slot.index, result.secure_url);
+        }
 
-      setSuccess(`${slot.title}: imagen actualizada.`);
+        setSuccess(`${slot.title}: imagen guardada en la base de datos.`);
+
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
@@ -233,11 +234,12 @@ function AdminSiteImages() {
         })}
       </section>
 
-      <p className="admin-site-images-note">
+        <p className="admin-site-images-note">
         Formatos permitidos: JPG, PNG y WebP. Tamaño máximo:
-        5 MB por imagen. Los cambios se guardan en este
-        navegador y las fotografías se alojan en Cloudinary.
-      </p>
+        5 MB por imagen. Las fotografías se alojan en Cloudinary
+        y sus direcciones se guardan en MongoDB.
+        </p>
+        
     </main>
   );
 }
