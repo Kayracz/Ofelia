@@ -1,24 +1,41 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
 import { useProducts } from "../context/useProducts";
 
 function AdminProducts() {
   const { products, deleteProduct } = useProducts();
+
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [error, setError] = useState("");
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  function handleDelete(id: number, name: string) {
+  async function handleDelete(id: number, name: string) {
     const confirmed = window.confirm(
       `¿Seguro que quieres eliminar "${name}"?`
     );
 
-    if (confirmed) {
-      deleteProduct(id);
+    if (!confirmed || deletingId !== null) return;
+
+    setError("");
+    setDeletingId(id);
+
+    try {
+      await deleteProduct(id);
+    } catch (error) {
+      console.error("No se pudo eliminar el producto:", error);
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo eliminar el producto. Inténtalo de nuevo."
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -38,6 +55,12 @@ function AdminProducts() {
           + Nuevo producto
         </Link>
       </div>
+
+      {error && (
+        <p className="admin-upload-error" role="alert">
+          {error}
+        </p>
+      )}
 
       <div className="admin-products-toolbar">
         <input
@@ -71,9 +94,19 @@ function AdminProducts() {
               <tr key={product.id}>
                 <td>
                   <div className="admin-product-name">
-                    <span className="admin-product-placeholder">
-                      O
-                    </span>
+                    {product.imageUrl ? (
+                      <div className="admin-product-thumbnail">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                        />
+                      </div>
+                    ) : (
+                      <span className="admin-product-placeholder">
+                        O
+                      </span>
+                    )}
+
                     <span>{product.name}</span>
                   </div>
                 </td>
@@ -117,10 +150,13 @@ function AdminProducts() {
                       type="button"
                       className="admin-delete-action"
                       onClick={() =>
-                        handleDelete(product.id, product.name)
+                        void handleDelete(product.id, product.name)
                       }
+                      disabled={deletingId !== null}
                     >
-                      Eliminar
+                      {deletingId === product.id
+                        ? "Eliminando..."
+                        : "Eliminar"}
                     </button>
                   </div>
                 </td>

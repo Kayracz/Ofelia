@@ -1,8 +1,11 @@
+
 import { Routes, Route, useParams } from "react-router-dom";
 
 import StoreLayout from "./layouts/StoreLayout";
 
 import AdminLayout from "./admin/AdminLayout";
+import AdminLogin from "./admin/AdminLogin";
+import RequireAdmin from "./admin/RequireAdmin";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminPlaceholder from "./admin/AdminPlaceholder";
 import AdminProducts from "./admin/AdminProducts";
@@ -26,25 +29,30 @@ function AdminProductFormRoute() {
 function App() {
   return (
     <Routes>
-      {/* ADMINISTRACIÓN */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="pedidos" element={<AdminPlaceholder />} />
-        <Route path="productos" element={<AdminProducts />} />
-        <Route path="imagenes" element={<AdminSiteImages />} />
+      {/* Inicio de sesión */}
+      <Route path="/admin/login" element={<AdminLogin />} />
 
-        <Route
-          path="productos/nuevo"
-          element={<AdminProductFormRoute />}
-        />
+      {/* Administración protegida */}
+      <Route element={<RequireAdmin />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="pedidos" element={<AdminPlaceholder />} />
+          <Route path="productos" element={<AdminProducts />} />
+          <Route path="imagenes" element={<AdminSiteImages />} />
 
-        <Route
-          path="productos/editar/:id"
-          element={<AdminProductFormRoute />}
-        />
+          <Route
+            path="productos/nuevo"
+            element={<AdminProductFormRoute />}
+          />
+
+          <Route
+            path="productos/editar/:id"
+            element={<AdminProductFormRoute />}
+          />
+        </Route>
       </Route>
 
-      {/* TIENDA PÚBLICA */}
+      {/* Tienda pública */}
       <Route element={<StoreLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
@@ -52,9 +60,7 @@ function App() {
 
         <Route
           path="/productos/:slug"
-          element={
-            <ProductDetail key={window.location.pathname} />
-          }
+          element={<ProductDetail key={window.location.pathname} />}
         />
 
         <Route path="/nosotras" element={<About />} />

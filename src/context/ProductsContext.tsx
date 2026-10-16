@@ -1,5 +1,9 @@
- 
-import { useEffect, useState, type ReactNode } from "react";
+
+import {
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 import {
   products as initialProducts,
@@ -9,6 +13,12 @@ import {
 import { getProducts } from "../services/productService";
 
 import {
+  createProduct,
+  updateProductApi,
+  deleteProductApi,
+} from "../services/adminService";
+
+import {
   ProductsContext,
   type ProductsContextValue,
 } from "./ProductsContextValue";
@@ -16,6 +26,10 @@ import {
 const STORAGE_KEY = "ofelia-products";
 
 type NewProduct = Omit<Product, "id">;
+
+interface ProductsProviderProps {
+  children: ReactNode;
+}
 
 function getInitialProducts(): Product[] {
   try {
@@ -35,12 +49,24 @@ function getInitialProducts(): Product[] {
   return initialProducts;
 }
 
-interface ProductsProviderProps {
-  children: ReactNode;
+function normalizeProduct(product: Product): Product {
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    isNew: product.isNew,
+    description: product.description,
+    imageUrl: product.imageUrl,
+    images: product.images,
+  };
 }
 
-export function ProductsProvider({ children }: ProductsProviderProps) {
-  const [products, setProducts] = useState<Product[]>(getInitialProducts);
+export function ProductsProvider({
+  children,
+}: ProductsProviderProps) {
+  const [products, setProducts] =
+    useState<Product[]>(getInitialProducts);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,18 +77,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
 
         if (cancelled) return;
 
-        const normalizedProducts: Product[] = apiProducts.map((product) => ({
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          price: product.price,
-          isNew: product.isNew,
-          description: product.description,
-          imageUrl: product.imageUrl,
-          images: product.images,
-        }));
-
-        setProducts(normalizedProducts);
+        setProducts(apiProducts.map(normalizeProduct));
       } catch (error) {
         console.error(
           "No se pudieron cargar los productos de la API. Se conserva el catálogo local.",
@@ -80,37 +95,53 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(products)
+      );
     } catch (error) {
-      console.error("No se pudieron guardar los productos:", error);
+      console.error(
+        "No se pudieron guardar los productos localmente:",
+        error
+      );
     }
   }, [products]);
 
-  function addProduct(product: NewProduct): Product {
-    const newId =
-      products.length > 0
-        ? Math.max(...products.map((item) => item.id)) + 1
-        : 1;
+  async function addProduct(
+    product: NewProduct
+  ): Promise<Product> {
+    const createdProduct = await createProduct(product);
+    const normalizedProduct = normalizeProduct(createdProduct);
 
-    const newProduct: Product = {
-      ...product,
-      id: newId,
-    };
+    setProducts((current) => [
+      ...current,
+      normalizedProduct,
+    ]);
 
-    setProducts((current) => [...current, newProduct]);
-
-    return newProduct;
+    return normalizedProduct;
   }
 
-  function updateProduct(id: number, updatedProduct: NewProduct) {
+  async function updateProduct(
+    id: number,
+    updatedProduct: NewProduct
+  ): Promise<void> {
+    const savedProduct = await updateProductApi(
+      id,
+      updatedProduct
+    );
+
+    const normalizedProduct = normalizeProduct(savedProduct);
+
     setProducts((current) =>
       current.map((product) =>
-        product.id === id ? { ...updatedProduct, id } : product
+        product.id === id ? normalizedProduct : product
       )
     );
   }
 
-  function deleteProduct(id: number) {
+  async function deleteProduct(id: number): Promise<void> {
+    await deleteProductApi(id);
+
     setProducts((current) =>
       current.filter((product) => product.id !== id)
     );
