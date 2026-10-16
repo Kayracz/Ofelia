@@ -1,7 +1,12 @@
 
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import { useCart } from "../context/useCart";
+import {
+  createOrder,
+  type CreateOrderData,
+} from "../services/orderService";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -16,13 +21,14 @@ function Checkout() {
     city: "",
     address: "",
     reference: "",
-    delivery: "envio",
+    delivery: "envio" as "envio" | "retiro",
   });
 
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
   const handleChange = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
-    >
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = event.target;
 
@@ -32,26 +38,65 @@ function Checkout() {
     }));
   };
 
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement>
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
-    const orderNumber = `OF-${Math.floor(
-      100000 + Math.random() * 900000
-    )}`;
+    if (submitting || items.length === 0) return;
 
-    const order = {
-      orderNumber,
+    setError("");
+    setSubmitting(true);
+
+    const orderData: CreateOrderData = {
       ...formData,
-      items,
-      totalPrice,
-      createdAt: new Date().toISOString(),
+      name: formData.name.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      department: formData.department.trim(),
+      city: formData.city.trim(),
+      address: formData.address.trim(),
+      reference: formData.reference.trim(),
+      items: items.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      })),
     };
 
-    localStorage.setItem("ofelia-order", JSON.stringify(order));
-    clearCart();
-    navigate("/confirmacion");
+    try {
+      const createdOrder = await createOrder(orderData);
+
+      const orderForConfirmation = {
+        orderNumber: createdOrder.orderNumber,
+        ...formData,
+        items,
+        totalPrice: createdOrder.totalPrice,
+        status: createdOrder.status,
+        createdAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem(
+        "ofelia-order",
+        JSON.stringify(orderForConfirmation)
+      );
+
+      clearCart();
+      navigate("/confirmacion");
+    } catch (error) {
+      console.error("No se pudo registrar el pedido:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado.";
+
+      setError(
+        `No se pudo registrar tu pedido. ${message} Comprueba tu conexión e inténtalo nuevamente.`
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
@@ -77,6 +122,7 @@ function Checkout() {
         <form className="checkout-form" onSubmit={handleSubmit}>
           <section className="checkout-section">
             <p className="checkout-section-number">01</p>
+
             <div className="checkout-section-content">
               <h2>Datos personales</h2>
 
@@ -138,6 +184,7 @@ function Checkout() {
 
           <section className="checkout-section">
             <p className="checkout-section-number">02</p>
+
             <div className="checkout-section-content">
               <h2>Entrega</h2>
 
@@ -202,7 +249,11 @@ function Checkout() {
               </div>
 
               <div className="delivery-options">
-                <label className={formData.delivery === "envio" ? "selected" : ""}>
+                <label
+                  className={
+                    formData.delivery === "envio" ? "selected" : ""
+                  }
+                >
                   <input
                     type="radio"
                     name="delivery"
@@ -210,13 +261,20 @@ function Checkout() {
                     checked={formData.delivery === "envio"}
                     onChange={handleChange}
                   />
+
                   <span>
                     <strong>Envío</strong>
-                    <small>Recibe tu pedido en tu dirección.</small>
+                    <small>
+                      Recibe tu pedido en tu dirección.
+                    </small>
                   </span>
                 </label>
 
-                <label className={formData.delivery === "retiro" ? "selected" : ""}>
+                <label
+                  className={
+                    formData.delivery === "retiro" ? "selected" : ""
+                  }
+                >
                   <input
                     type="radio"
                     name="delivery"
@@ -224,22 +282,36 @@ function Checkout() {
                     checked={formData.delivery === "retiro"}
                     onChange={handleChange}
                   />
+
                   <span>
                     <strong>Retiro</strong>
-                    <small>Coordinaremos los detalles contigo.</small>
+                    <small>
+                      Coordinaremos los detalles contigo.
+                    </small>
                   </span>
                 </label>
               </div>
             </div>
           </section>
 
-          <button type="submit" className="checkout-submit">
-            CONFIRMAR PEDIDO <span>↗</span>
+          {error && (
+            <p className="admin-upload-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="checkout-submit"
+            disabled={submitting}
+          >
+            {submitting ? "REGISTRANDO PEDIDO..." : "CONFIRMAR PEDIDO"}
+            {!submitting && <span> ↗</span>}
           </button>
 
           <p className="checkout-legal-note">
-            Al confirmar, registraremos tu pedido y podrás
-            coordinar los siguientes pasos por WhatsApp.
+            Tu pedido se registrará y podrás coordinar los siguientes
+            pasos por WhatsApp.
           </p>
         </form>
 
@@ -248,23 +320,48 @@ function Checkout() {
           <h2>Resumen del pedido</h2>
 
           {items.map((item) => (
-            <div className="checkout-summary-item" key={item.product.id}>
+            <div
+              className="checkout-summary-item"
+              key={item.product.id}
+            >
               <div className="checkout-summary-image">
-                <span>{item.quantity}</span>
+                {item.product.imageUrl ? (
+                  <img
+                    src={item.product.imageUrl}
+                    alt={item.product.name}
+                  />
+                ) : (
+                  <span>{item.quantity}</span>
+                )}
               </div>
+
               <div>
                 <p>{item.product.name}</p>
                 <span>Cantidad: {item.quantity}</span>
               </div>
+
               <strong>
-                {item.product.price * item.quantity} USD
+                {(item.product.price * item.quantity).toLocaleString(
+                  "es-BO",
+                  {
+                    style: "currency",
+                    currency: "BOB",
+                    maximumFractionDigits: 2,
+                  }
+                )}
               </strong>
             </div>
           ))}
 
           <div className="checkout-summary-total">
             <span>Subtotal</span>
-            <strong>{totalPrice} USD</strong>
+            <strong>
+              {totalPrice.toLocaleString("es-BO", {
+                style: "currency",
+                currency: "BOB",
+                maximumFractionDigits: 2,
+              })}
+            </strong>
           </div>
 
           <p className="checkout-summary-note">

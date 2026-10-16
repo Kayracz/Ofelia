@@ -7,7 +7,7 @@ import AdminLayout from "./admin/AdminLayout";
 import AdminLogin from "./admin/AdminLogin";
 import RequireAdmin from "./admin/RequireAdmin";
 import AdminDashboard from "./admin/AdminDashboard";
-import AdminPlaceholder from "./admin/AdminPlaceholder";
+import AdminOrders from "./admin/AdminOrders";
 import AdminProducts from "./admin/AdminProducts";
 import AdminProductForm from "./admin/AdminProductForm";
 import AdminSiteImages from "./admin/AdminSiteImages";
@@ -36,7 +36,7 @@ function App() {
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="pedidos" element={<AdminPlaceholder />} />
+          <Route path="pedidos" element={<AdminOrders />} />          
           <Route path="productos" element={<AdminProducts />} />
           <Route path="imagenes" element={<AdminSiteImages />} />
 
