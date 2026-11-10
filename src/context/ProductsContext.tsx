@@ -25,7 +25,18 @@ import {
 
 const STORAGE_KEY = "ofelia-products";
 
-type NewProduct = Omit<Product, "id">;
+interface ProductVariant {
+  label: string;
+  price: number;
+}
+
+type ProductWithVariants = Product & {
+  variants?: ProductVariant[];
+};
+
+type NewProduct = Omit<Product, "id"> & {
+  variants?: ProductVariant[];
+};
 
 interface ProductsProviderProps {
   children: ReactNode;
@@ -43,22 +54,29 @@ function getInitialProducts(): Product[] {
       }
     }
   } catch (error) {
-    console.error("No se pudieron cargar los productos:", error);
+    console.error(
+      "No se pudieron cargar los productos:",
+      error
+    );
   }
 
   return initialProducts;
 }
 
-function normalizeProduct(product: Product): Product {
+function normalizeProduct(
+  product: Product
+): Product {
+  const productWithVariants =
+    product as ProductWithVariants;
+
   return {
-    id: product.id,
-    name: product.name,
-    category: product.category,
-    price: product.price,
-    isNew: product.isNew,
-    description: product.description,
-    imageUrl: product.imageUrl,
-    images: product.images,
+    ...product,
+    variants: Array.isArray(productWithVariants.variants)
+      ? productWithVariants.variants.map((variant) => ({
+          label: variant.label,
+          price: Number(variant.price),
+        }))
+      : [],
   };
 }
 
@@ -68,6 +86,7 @@ export function ProductsProvider({
   const [products, setProducts] =
     useState<Product[]>(getInitialProducts);
 
+  // Load products from MongoDB API
   useEffect(() => {
     let cancelled = false;
 
@@ -77,7 +96,9 @@ export function ProductsProvider({
 
         if (cancelled) return;
 
-        setProducts(apiProducts.map(normalizeProduct));
+        setProducts(
+          apiProducts.map(normalizeProduct)
+        );
       } catch (error) {
         console.error(
           "No se pudieron cargar los productos de la API. Se conserva el catálogo local.",
@@ -93,6 +114,7 @@ export function ProductsProvider({
     };
   }, []);
 
+  // Save products in localStorage
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -107,11 +129,14 @@ export function ProductsProvider({
     }
   }, [products]);
 
+  // Add product
   async function addProduct(
     product: NewProduct
   ): Promise<Product> {
     const createdProduct = await createProduct(product);
-    const normalizedProduct = normalizeProduct(createdProduct);
+
+    const normalizedProduct =
+      normalizeProduct(createdProduct);
 
     setProducts((current) => [
       ...current,
@@ -121,6 +146,7 @@ export function ProductsProvider({
     return normalizedProduct;
   }
 
+  // Update product
   async function updateProduct(
     id: number,
     updatedProduct: NewProduct
@@ -130,16 +156,22 @@ export function ProductsProvider({
       updatedProduct
     );
 
-    const normalizedProduct = normalizeProduct(savedProduct);
+    const normalizedProduct =
+      normalizeProduct(savedProduct);
 
     setProducts((current) =>
       current.map((product) =>
-        product.id === id ? normalizedProduct : product
+        product.id === id
+          ? normalizedProduct
+          : product
       )
     );
   }
 
-  async function deleteProduct(id: number): Promise<void> {
+  // Delete product
+  async function deleteProduct(
+    id: number
+  ): Promise<void> {
     await deleteProductApi(id);
 
     setProducts((current) =>

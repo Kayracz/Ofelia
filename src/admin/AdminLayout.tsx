@@ -83,7 +83,7 @@ function AdminLayout() {
             <span>ADMIN STUDIO</span>
           </div>
 
-          <span className="admin-preview-label">PROTOTIPO</span>
+          <span className="admin-preview-label">Ofelia Admin</span>
         </header>
 
         <main className="admin-content">

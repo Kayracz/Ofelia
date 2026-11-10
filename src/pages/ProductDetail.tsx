@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -21,7 +22,9 @@ function ProductDetail() {
         : []
     : [];
 
-  const [activeImage, setActiveImage] = useState(() => 0);
+  const [activeImage, setActiveImage] = useState(0);
+  const [selectedVariantIndex, setSelectedVariantIndex] =
+    useState(0);
 
   if (!product) {
     return (
@@ -35,12 +38,29 @@ function ProductDetail() {
     );
   }
 
+  const variants = product.variants ?? [];
+
+  const selectedVariant = variants[selectedVariantIndex];
+
+  const currentPrice = selectedVariant
+    ? selectedVariant.price
+    : product.price;
+
   const categoryLabel =
     product.category === "panolletas"
       ? "SILK SCARF"
       : product.category === "flecos"
         ? "FRINGED SCARF"
         : "SILK TWILLY";
+
+  const handleAddToCart = () => {
+    const productToAdd = {
+      ...product,
+      price: currentPrice,
+    };
+
+    addToCart(productToAdd);
+  };
 
   return (
     <div className="product-detail-page">
@@ -107,7 +127,7 @@ function ProductDetail() {
           <h1>{product.name}</h1>
 
           <p className="product-detail-price">
-            Bs {product.price.toLocaleString("es-BO")}
+            Bs {currentPrice.toLocaleString("es-BO")}
           </p>
 
           <div className="product-detail-divider" />
@@ -115,6 +135,42 @@ function ProductDetail() {
           <p className="product-detail-description">
             {product.description}
           </p>
+
+          {variants.length > 0 && (
+            <div className="product-variant-selector">
+              <div className="product-variant-heading">
+                <span>TAMAÑO</span>
+                <span>
+                  {selectedVariant?.label}
+                </span>
+              </div>
+
+              <div className="product-variant-options">
+                {variants.map((variant, index) => (
+                  <button
+                    type="button"
+                    key={`${variant.label}-${index}`}
+                    className={`product-variant-option ${
+                      selectedVariantIndex === index
+                        ? "is-selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setSelectedVariantIndex(index)
+                    }
+                    aria-pressed={
+                      selectedVariantIndex === index
+                    }
+                  >
+                    <span>{variant.label}</span>
+                    <span>
+                      Bs {variant.price.toLocaleString("es-BO")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <p className="product-detail-note">
             Diseñado para acompañarte en cada ocasión.
@@ -124,7 +180,7 @@ function ProductDetail() {
           <button
             type="button"
             className="add-to-cart-button"
-            onClick={() => addToCart(product)}
+            onClick={handleAddToCart}
           >
             <span>AGREGAR AL CARRITO</span>
             <span>↗</span>

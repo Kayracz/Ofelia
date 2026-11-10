@@ -5,7 +5,18 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Product } from "../data/products";
 import { useProducts } from "../context/useProducts";
 
-type ProductFormData = Omit<Product, "id">;
+interface ProductVariant {
+  label: string;
+  price: number;
+}
+
+type ProductFormData = Omit<Product, "id"> & {
+  variants: ProductVariant[];
+};
+
+type ProductWithVariants = Product & {
+  variants?: ProductVariant[];
+};
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -21,6 +32,7 @@ const emptyProduct: ProductFormData = {
   description: "",
   imageUrl: "",
   images: [],
+  variants: [],
 };
 
 function AdminProductForm() {
@@ -30,7 +42,9 @@ function AdminProductForm() {
   const { products, addProduct, updateProduct } = useProducts();
 
   const existingProduct = id
-    ? products.find((product) => product.id === Number(id))
+    ? (products.find(
+        (product) => product.id === Number(id)
+      ) as ProductWithVariants | undefined)
     : undefined;
 
   const [formData, setFormData] = useState<ProductFormData>(() => {
@@ -51,6 +65,7 @@ function AdminProductForm() {
       description: existingProduct.description,
       imageUrl: productImages[0] ?? "",
       images: productImages,
+      variants: existingProduct.variants ?? [],
     };
   });
 
@@ -62,48 +77,87 @@ function AdminProductForm() {
   const notFound = Boolean(id && !existingProduct);
   const images = formData.images ?? [];
 
-  function handleChange(
-    event: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+function handleChange(
+  event: ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >
+) {
+  const target = event.target;
+  const { name, value } = target;
+
+  if (name === "isNew" && target instanceof HTMLInputElement) {
+    setFormData((current) => ({
+      ...current,
+      isNew: target.checked,
+    }));
+
+    return;
+  }
+
+  if (name === "category") {
+    setFormData((current) => ({
+      ...current,
+      category: value as Product["category"],
+    }));
+
+    return;
+  }
+
+  if (name === "price") {
+    setFormData((current) => ({
+      ...current,
+      price: value === "" ? 0 : Number(value),
+    }));
+
+    return;
+  }
+
+  if (name === "name" || name === "description") {
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+}
+
+  function addVariant() {
+    setFormData((current) => ({
+      ...current,
+      variants: [
+        ...current.variants,
+        { label: "", price: 0 },
+      ],
+    }));
+  }
+
+  function updateVariant(
+    index: number,
+    field: keyof ProductVariant,
+    value: string
   ) {
-    const { name, value } = event.target;
+    setFormData((current) => ({
+      ...current,
+      variants: current.variants.map((variant, i) =>
+        i === index
+          ? {
+              ...variant,
+              [field]:
+                field === "price"
+                  ? value === "" ? 0 : Number(value)
+                  : value,
+            }
+          : variant
+      ),
+    }));
+  }
 
-    if (name === "isNew" && event.target instanceof HTMLInputElement) {
-      const checked = event.target.checked;
-
-      setFormData((current) => ({
-        ...current,
-        isNew: checked,
-      }));
-
-      return;
-    }
-
-    if (name === "category") {
-      setFormData((current) => ({
-        ...current,
-        category: value as Product["category"],
-      }));
-
-      return;
-    }
-
-    if (name === "price") {
-      setFormData((current) => ({
-        ...current,
-        price: value === "" ? 0 : Number(value),
-      }));
-
-      return;
-    }
-
-    if (name === "name" || name === "description") {
-      setFormData((current) => ({
-        ...current,
-        [name]: value,
-      }));
-    }
+  function removeVariant(index: number) {
+    setFormData((current) => ({
+      ...current,
+      variants: current.variants.filter(
+        (_, i) => i !== index
+      ),
+    }));
   }
 
   async function uploadImage(file: File): Promise<string> {
@@ -186,8 +240,7 @@ function AdminProductForm() {
       const uploadedUrls: string[] = [];
 
       for (const file of files) {
-        const url = await uploadImage(file);
-        uploadedUrls.push(url);
+        uploadedUrls.push(await uploadImage(file));
       }
 
       setFormData((current) => {
@@ -236,6 +289,41 @@ function AdminProductForm() {
 
     setSaveError("");
 
+    const cleanedVariants = formData.variants.map((variant) => ({
+      label: variant.label.trim(),
+      price: Number(variant.price),
+    }));
+
+    const hasInvalidVariant = cleanedVariants.some(
+      (variant) =>
+        !variant.label ||
+        !Number.isFinite(variant.price) ||
+        variant.price <= 0
+    );
+
+    const duplicateLabels =
+      cleanedVariants.some((variant, index) =>
+        cleanedVariants.some(
+          (other, otherIndex) =>
+            otherIndex !== index &&
+            other.label.toLowerCase() === variant.label.toLowerCase()
+        )
+      );
+
+    if (hasInvalidVariant) {
+      setSaveError(
+        "Completa el nombre y el precio de cada tamaño."
+      );
+      return;
+    }
+
+    if (duplicateLabels) {
+      setSaveError(
+        "No puedes repetir el mismo tamaño."
+      );
+      return;
+    }
+
     const cleanedProduct: ProductFormData = {
       ...formData,
       name: formData.name.trim(),
@@ -243,6 +331,7 @@ function AdminProductForm() {
       price: Number(formData.price),
       images,
       imageUrl: images[0] ?? "",
+      variants: cleanedVariants,
     };
 
     if (
@@ -274,13 +363,37 @@ function AdminProductForm() {
       }
 
       navigate("/admin/productos");
-    } catch (error) {
-      console.error("No se pudo guardar el producto:", error);
+ } catch (error: unknown) {
+  console.error("Error completo al guardar producto:", error);
 
-      setSaveError(
-        "No se pudo guardar el producto. Comprueba tu sesión de administrador y que el servidor y MongoDB estén funcionando."
-      );
-    } finally {
+  const err = error as {
+    response?: {
+      status?: number;
+      data?: {
+        message?: string;
+        error?: string;
+      };
+    };
+    message?: string;
+  };
+
+  const message =
+    err.response?.data?.message ||
+    err.response?.data?.error ||
+    err.message ||
+    "Error desconocido";
+
+  console.error("HTTP status:", err.response?.status);
+  console.error("Respuesta del servidor:", err.response?.data);
+
+  setSaveError(
+    `No se pudo guardar el producto: ${message} ${
+      err.response?.status
+        ? `(HTTP ${err.response.status})`
+        : ""
+    }`
+  );
+} finally {
       setSaving(false);
     }
   }
@@ -290,11 +403,7 @@ function AdminProductForm() {
       <section className="admin-form-page">
         <h1>Producto no encontrado</h1>
         <p>Puede que el producto haya sido eliminado.</p>
-
-        <Link
-          to="/admin/productos"
-          className="admin-text-action"
-        >
+        <Link to="/admin/productos" className="admin-text-action">
           Volver a productos
         </Link>
       </section>
@@ -306,19 +415,12 @@ function AdminProductForm() {
       <div className="admin-page-heading">
         <div>
           <span className="admin-eyebrow">CATÁLOGO OFELIA</span>
-
           <h1>{id ? "Editar producto" : "Nuevo producto"}</h1>
-
-          <p>
-            Completa la información que se mostrará en tu tienda.
-          </p>
+          <p>Completa la información que se mostrará en tu tienda.</p>
         </div>
       </div>
 
-      <form
-        className="admin-product-form"
-        onSubmit={handleSubmit}
-      >
+      <form className="admin-product-form" onSubmit={handleSubmit}>
         {saveError && (
           <p className="admin-upload-error" role="alert">
             {saveError}
@@ -330,7 +432,6 @@ function AdminProductForm() {
 
           <label>
             Nombre del producto
-
             <input
               name="name"
               value={formData.name}
@@ -342,7 +443,6 @@ function AdminProductForm() {
 
           <label>
             Categoría
-
             <select
               name="category"
               value={formData.category}
@@ -356,8 +456,7 @@ function AdminProductForm() {
           </label>
 
           <label>
-            Precio (Bs)
-
+            Precio base (Bs)
             <input
               type="number"
               name="price"
@@ -372,7 +471,6 @@ function AdminProductForm() {
 
           <label>
             Descripción
-
             <textarea
               name="description"
               value={formData.description}
@@ -390,9 +488,84 @@ function AdminProductForm() {
               checked={formData.isNew}
               onChange={handleChange}
             />
-
             <span>Destacar como New In</span>
           </label>
+        </div>
+
+        <div className="admin-form-section">
+          <h2>Tamaños y precios</h2>
+          <p>
+            Agrega diferentes opciones para este producto.
+            Cada tamaño puede tener su propio precio.
+          </p>
+
+          {formData.variants.map((variant, index) => (
+            <div
+              key={index}
+              className="admin-variant-row"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr auto",
+                gap: "12px",
+                alignItems: "end",
+                marginBottom: "14px",
+              }}
+            >
+              <label>
+                Tamaño
+                <input
+                  value={variant.label}
+                  onChange={(event) =>
+                    updateVariant(index, "label", event.target.value)
+                  }
+                  placeholder="Ej. 55 x 55 cm"
+                />
+              </label>
+
+              <label>
+                Precio (Bs)
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={variant.price || ""}
+                  onChange={(event) =>
+                    updateVariant(index, "price", event.target.value)
+                  }
+                  placeholder="159"
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={() => removeVariant(index)}
+                disabled={saving}
+                aria-label="Eliminar tamaño"
+                style={{
+                  padding: "12px 16px",
+                  marginBottom: "0",
+                }}
+              >
+                Eliminar
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="admin-secondary-button"
+            onClick={addVariant}
+            disabled={saving}
+          >
+            + Agregar tamaño
+          </button>
+
+          {formData.variants.length === 0 && (
+            <p className="admin-upload-help">
+              Este producto se venderá con su precio base,
+              sin opciones de tamaño.
+            </p>
+          )}
         </div>
 
         <div className="admin-form-section">
@@ -406,10 +579,7 @@ function AdminProductForm() {
           {images.length > 0 && (
             <div className="admin-gallery-grid">
               {images.map((url, index) => (
-                <div
-                  className="admin-gallery-item"
-                  key={url}
-                >
+                <div className="admin-gallery-item" key={url}>
                   <img
                     src={url}
                     alt={`${formData.name || "Producto"} ${index + 1}`}
@@ -451,9 +621,7 @@ function AdminProductForm() {
             </label>
           )}
 
-          {uploading && (
-            <p>Subiendo tus fotos a Cloudinary…</p>
-          )}
+          {uploading && <p>Subiendo tus fotos a Cloudinary…</p>}
 
           {uploadError && (
             <p className="admin-upload-error" role="alert">

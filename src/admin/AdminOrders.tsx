@@ -42,16 +42,15 @@ function AdminOrders() {
       const data = await getAdminOrders();
       setOrders(data);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("No se pudieron cargar los pedidos.");
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudieron cargar los pedidos."
+      );
     } finally {
       setLoading(false);
     }
   }, []);
-
 
 useEffect(() => {
   let cancelled = false;
@@ -85,7 +84,6 @@ useEffect(() => {
     cancelled = true;
   };
 }, []);
-
 
   async function handleStatusChange(
     order: AdminOrder,
@@ -161,9 +159,7 @@ useEffect(() => {
       )}
 
       {loading ? (
-        <div className="admin-orders-message">
-          Cargando pedidos...
-        </div>
+        <div className="admin-orders-message">Cargando pedidos...</div>
       ) : orders.length === 0 ? (
         <div className="admin-orders-empty">
           <span>01 / PEDIDOS</span>
@@ -217,14 +213,21 @@ useEffect(() => {
 
               <div className="admin-order-items">
                 <span className="admin-order-label">PRODUCTOS</span>
+
                 {order.items.map((item, index) => (
                   <div
                     className="admin-order-item"
                     key={`${item.productId}-${index}`}
                   >
                     <span>
-                      {item.name} × {item.quantity}
+                      {item.name}
+                      {item.variantLabel && (
+                        <span> — {item.variantLabel}</span>
+                      )}
+                      {" × "}
+                      {item.quantity}
                     </span>
+
                     <strong>
                       {formatPrice(item.price * item.quantity)}
                     </strong>
@@ -258,6 +261,7 @@ useEffect(() => {
                       </option>
                     ))}
                   </select>
+
                   {updatingId === order._id && (
                     <span>Guardando cambio...</span>
                   )}

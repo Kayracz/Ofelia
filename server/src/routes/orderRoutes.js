@@ -1,5 +1,4 @@
 
-
 const express = require("express");
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
@@ -40,7 +39,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Validar los artículos antes de consultar la base de datos
     for (const item of items) {
       if (
         !Number.isInteger(Number(item.productId)) ||
@@ -68,19 +66,50 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const orderItems = items.map((item) => {
+    const orderItems = [];
+
+    for (const item of items) {
       const product = products.find(
         (p) => p.id === Number(item.productId)
       );
 
-      return {
+      if (!product) {
+        return res.status(400).json({
+          message: "Uno o más productos ya no están disponibles.",
+        });
+      }
+
+      const variants = product.variants || [];
+      let selectedVariant = null;
+
+      if (variants.length > 0) {
+        selectedVariant = variants.find(
+          (variant) =>
+            variant.label === String(item.variantLabel || "").trim()
+        );
+
+        if (!selectedVariant) {
+          return res.status(400).json({
+            message: `Selecciona una medida válida para ${product.name}.`,
+          });
+        }
+      } else if (item.variantLabel) {
+        return res.status(400).json({
+          message: `${product.name} ya no tiene esa opción disponible.`,
+        });
+      }
+
+      orderItems.push({
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: selectedVariant
+          ? selectedVariant.price
+          : product.price,
         quantity: Number(item.quantity),
         imageUrl: product.imageUrl || "",
-      };
-    });
+        variantLabel: selectedVariant?.label || "",
+      });
+    }
 
     const totalPrice = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -140,6 +169,7 @@ router.get("/", requireAdmin, async (req, res) => {
     return res.json(orders);
   } catch (error) {
     console.error("Error consultando pedidos:", error);
+
     return res.status(500).json({
       message: "No se pudieron consultar los pedidos.",
     });
@@ -185,6 +215,7 @@ router.patch("/:id/status", requireAdmin, async (req, res) => {
     return res.json(order);
   } catch (error) {
     console.error("Error actualizando pedido:", error);
+
     return res.status(500).json({
       message: "No se pudo actualizar el pedido.",
     });

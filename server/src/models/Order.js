@@ -26,6 +26,11 @@ const orderItemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    variantLabel: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   { _id: false }
 );

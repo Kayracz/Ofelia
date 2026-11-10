@@ -5,6 +5,7 @@ const requireAdmin = require("../middleware/requireAdmin");
 
 const router = express.Router();
 
+// Generate product slug
 function createSlug(name) {
   return name
     .normalize("NFD")
@@ -15,21 +16,57 @@ function createSlug(name) {
     .replace(/^-|-$/g, "");
 }
 
+// Validate product information and variations
 function validateProduct(body) {
-  const { name, category, price, description } = body;
+  const { name, category, price, description, variants } = body;
 
-  return (
+  const validBase =
     typeof name === "string" &&
     name.trim().length > 0 &&
     ["panolletas", "flecos", "twillys"].includes(category) &&
-    Number.isFinite(price) &&
-    price > 0 &&
+    Number.isFinite(Number(price)) &&
+    Number(price) > 0 &&
     typeof description === "string" &&
-    description.trim().length > 0
-  );
+    description.trim().length > 0;
+
+  if (!validBase) return false;
+
+  if (variants === undefined) return true;
+  if (!Array.isArray(variants)) return false;
+
+  const labels = new Set();
+
+  return variants.every((variant) => {
+    if (
+      !variant ||
+      typeof variant.label !== "string" ||
+      !variant.label.trim() ||
+      !Number.isFinite(Number(variant.price)) ||
+      Number(variant.price) <= 0
+    ) {
+      return false;
+    }
+
+    const label = variant.label.trim().toLowerCase();
+
+    if (labels.has(label)) return false;
+
+    labels.add(label);
+    return true;
+  });
 }
 
-// GET /api/products — catálogo público
+// Clean variations before saving
+function cleanVariants(variants) {
+  if (!Array.isArray(variants)) return [];
+
+  return variants.map((variant) => ({
+    label: variant.label.trim(),
+    price: Number(variant.price),
+  }));
+}
+
+// GET ALL PRODUCTS
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find({ active: true })
@@ -38,13 +75,14 @@ router.get("/", async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error("Error al obtener productos:", error.message);
+
     res.status(500).json({
       message: "No se pudieron obtener los productos.",
     });
   }
 });
 
-// GET /api/products/:slug — detalle público
+// GET PRODUCT BY SLUG
 router.get("/:slug", async (req, res) => {
   try {
     const product = await Product.findOne({
@@ -61,71 +99,85 @@ router.get("/:slug", async (req, res) => {
     res.json(product);
   } catch (error) {
     console.error("Error al obtener el producto:", error.message);
+
     res.status(500).json({
       message: "No se pudo obtener el producto.",
     });
   }
 });
 
-// POST /api/products — crear
+// CREATE PRODUCT
 router.post("/", requireAdmin, async (req, res) => {
   try {
     if (!validateProduct(req.body)) {
       return res.status(400).json({
-        message: "Revisa el nombre, la categoría, el precio y la descripción.",
+        message: "Revisa el nombre, la categoría, el precio y las variantes.",
       });
     }
 
-    const id = await Product.countDocuments() > 0
-      ? (await Product.findOne().sort({ id: -1 }).select("id")).id + 1
-      : 1;
+    const lastProduct = await Product.findOne()
+      .sort({ id: -1 })
+      .select("id");
 
-    const slug = createSlug(req.body.name);
+    const id = lastProduct ? lastProduct.id + 1 : 1;
 
     const product = await Product.create({
       id,
       name: req.body.name.trim(),
-      slug,
+      slug: createSlug(req.body.name),
       category: req.body.category,
-      price: req.body.price,
+      price: Number(req.body.price),
+      variants: cleanVariants(req.body.variants),
       isNew: Boolean(req.body.isNew),
       description: req.body.description.trim(),
       imageUrl: req.body.imageUrl || "",
-      images: Array.isArray(req.body.images) ? req.body.images : [],
+      images: Array.isArray(req.body.images)
+        ? req.body.images
+        : [],
       active: true,
     });
 
     res.status(201).json(product);
   } catch (error) {
     console.error("Error al crear producto:", error.message);
+
     res.status(500).json({
       message: "No se pudo crear el producto.",
     });
   }
 });
 
-// PUT /api/products/:id — editar
+// UPDATE PRODUCT
 router.put("/:id", requireAdmin, async (req, res) => {
   try {
     if (!validateProduct(req.body)) {
       return res.status(400).json({
-        message: "Revisa el nombre, la categoría, el precio y la descripción.",
+        message: "Revisa el nombre, la categoría, el precio y las variantes.",
       });
     }
 
     const product = await Product.findOneAndUpdate(
-      { id: Number(req.params.id), active: true },
+      {
+        id: Number(req.params.id),
+        active: true,
+      },
       {
         name: req.body.name.trim(),
         slug: createSlug(req.body.name),
         category: req.body.category,
-        price: req.body.price,
+        price: Number(req.body.price),
+        variants: cleanVariants(req.body.variants),
         isNew: Boolean(req.body.isNew),
         description: req.body.description.trim(),
         imageUrl: req.body.imageUrl || "",
-        images: Array.isArray(req.body.images) ? req.body.images : [],
+        images: Array.isArray(req.body.images)
+          ? req.body.images
+          : [],
       },
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!product) {
@@ -137,19 +189,27 @@ router.put("/:id", requireAdmin, async (req, res) => {
     res.json(product);
   } catch (error) {
     console.error("Error al editar producto:", error.message);
+
     res.status(500).json({
       message: "No se pudo editar el producto.",
     });
   }
 });
 
-// DELETE /api/products/:id — eliminar
+// DELETE PRODUCT (SOFT DELETE)
 router.delete("/:id", requireAdmin, async (req, res) => {
   try {
     const product = await Product.findOneAndUpdate(
-      { id: Number(req.params.id), active: true },
-      { active: false },
-      { new: true }
+      {
+        id: Number(req.params.id),
+        active: true,
+      },
+      {
+        active: false,
+      },
+      {
+        new: true,
+      }
     );
 
     if (!product) {
@@ -158,12 +218,16 @@ router.delete("/:id", requireAdmin, async (req, res) => {
       });
     }
 
-    res.json({ message: "Producto eliminado correctamente." });
+    res.json({
+      message: "Producto eliminado correctamente.",
+    });
   } catch (error) {
     console.error("Error al eliminar producto:", error.message);
+
     res.status(500).json({
       message: "No se pudo eliminar el producto.",
     });
   }
 });
+
 module.exports = router;

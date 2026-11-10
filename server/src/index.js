@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
@@ -12,11 +13,30 @@ const siteImageRoutes = require("./routes/siteImageRoutes");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-}));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ofelia-store.onrender.com",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permitir solicitudes sin Origin, como health checks.
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.error("CORS bloqueado para:", origin);
+      return callback(new Error("Origen no permitido por CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
+
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
@@ -32,9 +52,10 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     service: "ofelia-api",
-    database: mongoose.connection.readyState === 1
-      ? "connected"
-      : "disconnected",
+    database:
+      mongoose.connection.readyState === 1
+        ? "connected"
+        : "disconnected",
   });
 });
 

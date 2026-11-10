@@ -14,9 +14,11 @@ export interface CreateOrderData {
   address: string;
   reference: string;
   delivery: "envio" | "retiro";
+
   items: {
     productId: number;
     quantity: number;
+    variantLabel?: string;
   }[];
 }
 

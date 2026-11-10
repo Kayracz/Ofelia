@@ -58,9 +58,13 @@ function Checkout() {
       city: formData.city.trim(),
       address: formData.address.trim(),
       reference: formData.reference.trim(),
+
+      // Send the selected variation with each item.
+      // The backend will verify its price.
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
+        variantLabel: item.variant?.label,
       })),
     };
 
@@ -319,39 +323,54 @@ function Checkout() {
           <p className="eyebrow">YOUR SELECTION</p>
           <h2>Resumen del pedido</h2>
 
-          {items.map((item) => (
-            <div
-              className="checkout-summary-item"
-              key={item.product.id}
-            >
-              <div className="checkout-summary-image">
-                {item.product.imageUrl ? (
-                  <img
-                    src={item.product.imageUrl}
-                    alt={item.product.name}
-                  />
-                ) : (
-                  <span>{item.quantity}</span>
-                )}
-              </div>
+          {items.map((item) => {
+            const itemPrice = item.variant?.price ?? item.product.price;
 
-              <div>
-                <p>{item.product.name}</p>
-                <span>Cantidad: {item.quantity}</span>
-              </div>
+            const itemImage =
+              item.product.images?.[0] ||
+              item.product.imageUrl;
 
-              <strong>
-                {(item.product.price * item.quantity).toLocaleString(
-                  "es-BO",
-                  {
-                    style: "currency",
-                    currency: "BOB",
-                    maximumFractionDigits: 2,
-                  }
-                )}
-              </strong>
-            </div>
-          ))}
+            return (
+              <div
+                className="checkout-summary-item"
+                key={`${item.product.id}-${item.variant?.label ?? "default"}`}
+              >
+                <div className="checkout-summary-image">
+                  {itemImage ? (
+                    <img
+                      src={itemImage}
+                      alt={item.product.name}
+                    />
+                  ) : (
+                    <span>{item.quantity}</span>
+                  )}
+                </div>
+
+                <div>
+                  <p>{item.product.name}</p>
+
+                  {item.variant && (
+                    <span>
+                      Tamaño: {item.variant.label}
+                    </span>
+                  )}
+
+                  <span>Cantidad: {item.quantity}</span>
+                </div>
+
+                <strong>
+                  {(itemPrice * item.quantity).toLocaleString(
+                    "es-BO",
+                    {
+                      style: "currency",
+                      currency: "BOB",
+                      maximumFractionDigits: 2,
+                    }
+                  )}
+                </strong>
+              </div>
+            );
+          })}
 
           <div className="checkout-summary-total">
             <span>Subtotal</span>

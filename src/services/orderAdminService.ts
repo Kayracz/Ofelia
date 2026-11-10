@@ -27,6 +27,7 @@ export interface AdminOrder {
     price: number;
     quantity: number;
     imageUrl?: string;
+    variantLabel?: string;
   }[];
   totalPrice: number;
   status: "pendiente" | "pagado" | "enviado" | "cancelado";
