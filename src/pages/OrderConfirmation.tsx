@@ -54,7 +54,7 @@ function OrderConfirmation() {
     );
   }
 
-  const whatsappNumber = "59178000375";
+  const whatsappNumber = "59175086484";
 
   const message = [
     "Hola, quiero coordinar mi pedido en OFELIA.",
