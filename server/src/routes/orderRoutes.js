@@ -83,10 +83,15 @@ router.post("/", async (req, res) => {
       let selectedVariant = null;
 
       if (variants.length > 0) {
-        selectedVariant = variants.find(
-          (variant) =>
-            variant.label === String(item.variantLabel || "").trim()
-        );
+       function normalizeVariantLabel(label) {
+  return String(label || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[×]/g, "x")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
 
         if (!selectedVariant) {
           return res.status(400).json({

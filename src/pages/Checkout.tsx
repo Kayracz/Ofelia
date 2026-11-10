@@ -87,18 +87,39 @@ function Checkout() {
 
       clearCart();
       navigate("/confirmacion");
-    } catch (error) {
-      console.error("No se pudo registrar el pedido:", error);
+    
+} catch (error: unknown) {
+  console.error("Error completo al registrar pedido:", error);
 
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Ocurrió un error inesperado.";
+  const err = error as {
+    response?: {
+      status?: number;
+      data?: {
+        message?: string;
+        error?: string;
+      };
+    };
+    message?: string;
+  };
 
-      setError(
-        `No se pudo registrar tu pedido. ${message} Comprueba tu conexión e inténtalo nuevamente.`
-      );
-    } finally {
+  const serverMessage =
+    err.response?.data?.message ||
+    err.response?.data?.error ||
+    err.message ||
+    "Error desconocido";
+
+  console.error("HTTP status:", err.response?.status);
+  console.error("Respuesta del servidor:", err.response?.data);
+
+  setError(
+    `No se pudo registrar el pedido: ${serverMessage} ${
+      err.response?.status
+        ? `(HTTP ${err.response.status})`
+        : ""
+    }`
+  );
+}
+ finally {
       setSubmitting(false);
     }
   };
