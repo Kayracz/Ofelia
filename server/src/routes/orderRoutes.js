@@ -7,6 +7,19 @@ const requireAdmin = require("../middleware/requireAdmin");
 
 const router = express.Router();
 
+// Normalizar etiquetas para comparar medidas.
+// Ejemplo: "55 × 55 cm", "55 x 55" y "55 X 55 CM".
+function normalizeVariantLabel(label) {
+  return String(label || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[×]/g, "x")
+    .replace(/\bcm\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
 // Registrar un pedido desde el checkout
 router.post("/", async (req, res) => {
   try {
@@ -23,6 +36,7 @@ router.post("/", async (req, res) => {
       items,
     } = req.body;
 
+    // Validar datos obligatorios
     if (
       !name?.trim() ||
       !lastName?.trim() ||
@@ -39,6 +53,7 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Validar productos y cantidades
     for (const item of items) {
       if (
         !Number.isInteger(Number(item.productId)) ||
@@ -51,6 +66,7 @@ router.post("/", async (req, res) => {
       }
     }
 
+    // Obtener los productos desde MongoDB
     const productIds = [
       ...new Set(items.map((item) => Number(item.productId))),
     ];
@@ -68,6 +84,7 @@ router.post("/", async (req, res) => {
 
     const orderItems = [];
 
+    // Validar cada producto y su variante
     for (const item of items) {
       const product = products.find(
         (p) => p.id === Number(item.productId)
@@ -82,28 +99,34 @@ router.post("/", async (req, res) => {
       const variants = product.variants || [];
       let selectedVariant = null;
 
+      const requestedVariantLabel =
+        item.variantLabel || item.variant?.label || "";
+
       if (variants.length > 0) {
-       function normalizeVariantLabel(label) {
-  return String(label || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[×]/g, "x")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
+        selectedVariant = variants.find(
+          (variant) =>
+            normalizeVariantLabel(variant.label) ===
+            normalizeVariantLabel(requestedVariantLabel)
+        );
 
         if (!selectedVariant) {
+          console.error("Variante no encontrada:", {
+            product: product.name,
+            requestedVariantLabel,
+            availableVariants: variants.map((v) => v.label),
+          });
+
           return res.status(400).json({
             message: `Selecciona una medida válida para ${product.name}.`,
           });
         }
-      } else if (item.variantLabel) {
+      } else if (requestedVariantLabel) {
         return res.status(400).json({
           message: `${product.name} ya no tiene esa opción disponible.`,
         });
       }
 
+      // Guardar el precio real del producto o de su variante
       orderItems.push({
         productId: product.id,
         name: product.name,
@@ -116,11 +139,13 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Calcular el total usando los precios de MongoDB
     const totalPrice = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
 
+    // Crear el pedido
     const order = await Order.create({
       orderNumber: `OF-${Date.now()}-${Math.floor(
         1000 + Math.random() * 9000
