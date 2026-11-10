@@ -4592,3 +4592,27 @@ footer > div:last-child {
     justify-content: flex-start;
   }
 }
+
+.admin-product-thumb {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0eee8;
+}
+
+.admin-product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-product-thumb span {
+  font-family: var(--font-editorial);
+  font-size: 22px;
+  color: #25231f;
+}

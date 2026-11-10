@@ -99,9 +99,17 @@ function AdminDashboard() {
                 <tr key={product.id}>
                   <td>
                     <div className="admin-product-cell">
-                      <div className="admin-product-thumb">
-                        {product.name.charAt(0)}
-                      </div>
+                     <div className="admin-product-thumb">
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span>{product.name.charAt(0)}</span>
+                          )}
+                        </div>
                       <div>
                         <strong>{product.name}</strong>
                         <span>ID: {product.id}</span>
