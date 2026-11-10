@@ -139,7 +139,7 @@ function AdminSiteImages() {
 
   return (
     <main className="admin-site-images">
-      <header className="admin-site-images-header">
+      <div className="admin-site-images-header">
         <div>
           <p className="admin-site-images-eyebrow">
             OFELIA / CONTENIDO
@@ -161,7 +161,7 @@ function AdminSiteImages() {
         >
           Ver tienda ↗
         </Link>
-      </header>
+      </div>
 
       {error && (
         <div className="admin-site-images-message error">

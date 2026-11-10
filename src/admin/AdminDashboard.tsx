@@ -5,7 +5,6 @@ import { useProducts } from "../context/useProducts";
 function AdminDashboard() {
   const { products } = useProducts();
   const newProducts = products.filter((product) => product.isNew).length;
-
   const categories = new Set(products.map((product) => product.category));
 
   return (
@@ -17,9 +16,20 @@ function AdminDashboard() {
           <p>Bienvenida a la administración de OFELIA.</p>
         </div>
 
-        <Link to="/admin/productos/nuevo" className="admin-primary-button">
-          <span>+</span> NUEVO PRODUCTO
-        </Link>
+        <div className="admin-dashboard-actions">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="admin-store-button"
+          >
+            VER TIENDA ↗
+          </a>
+
+          <Link to="/admin/productos/nuevo" className="admin-primary-button">
+            <span>+</span> NUEVO PRODUCTO
+          </Link>
+        </div>
       </div>
 
       <section className="admin-stats">

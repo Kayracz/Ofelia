@@ -53,14 +53,9 @@ function ProductDetail() {
         ? "FRINGED SCARF"
         : "SILK TWILLY";
 
-  const handleAddToCart = () => {
-    const productToAdd = {
-      ...product,
-      price: currentPrice,
-    };
-
-    addToCart(productToAdd);
-  };
+const handleAddToCart = () => {
+  addToCart(product, selectedVariant);
+};
 
   return (
     <div className="product-detail-page">
