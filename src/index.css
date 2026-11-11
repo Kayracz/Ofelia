@@ -4996,3 +4996,247 @@ footer > div:last-child {
   cursor: not-allowed;
 }
 
+
+/* Header shopping cart */
+
+.header-cart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.header-cart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+}
+
+/* Bounce when the cart quantity changes */
+.header-cart-icon {
+  animation: cartBounce 0.5s ease;
+}
+
+@keyframes cartBounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-5px) scale(1.08);
+  }
+  50% {
+    transform: translateY(0) scale(0.96);
+  }
+  75% {
+    transform: translateY(-2px) scale(1.03);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Quantity badge */
+.cart-count {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background: #a68b70;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  animation: cartBadgePop 0.35s ease both;
+}
+
+@keyframes cartBadgePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-cart-icon,
+  .cart-count {
+    animation: none;
+  }
+}
+
+/* Cart icon alignment */
+.header-cart {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.header-cart-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cartBounce 0.5s ease;
+}
+
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(30%, -20%);
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #a68b70;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  animation: cartBadgePop 0.35s ease both;
+}
+
+@keyframes cartBounce {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-5px); }
+  65% { transform: translateY(2px); }
+}
+
+@keyframes cartBadgePop {
+  0% { opacity: 0; scale: 0.4; }
+  70% { opacity: 1; scale: 1.2; }
+  100% { opacity: 1; scale: 1; }
+}
+
+/* Add to cart notification */
+.cart-toast {
+  position: fixed;
+  z-index: 10000;
+  bottom: 28px;
+  left: 50%;
+  width: min(460px, calc(100% - 32px));
+  padding: 17px 42px 17px 17px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #fff;
+  color: #292722;
+  border: 1px solid #e8e2d9;
+  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.13);
+  transform: translateX(-50%);
+  animation: toastEnter 0.4s ease both;
+}
+
+.cart-toast-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f3eee8;
+  color: #987b5f;
+}
+
+.cart-toast-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cart-toast-content strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cart-toast-content span {
+  color: #77716a;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cart-toast-link {
+  flex-shrink: 0;
+  color: #987b5f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cart-toast-close {
+  position: absolute;
+  top: 5px;
+  right: 9px;
+  border: 0;
+  background: transparent;
+  color: #777;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+@keyframes toastEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-toast {
+    bottom: 16px;
+    gap: 9px;
+    padding: 14px 35px 14px 12px;
+  }
+
+  .cart-toast-link {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-cart-icon,
+  .cart-count,
+  .cart-toast {
+    animation: none;
+  }
+}
+

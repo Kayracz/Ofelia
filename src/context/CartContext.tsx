@@ -247,6 +247,14 @@ export function CartProvider({
         : product.price,
     };
 
+    window.dispatchEvent(
+  new CustomEvent("ofelia:cart-added", {
+    detail: {
+      name: product.name,
+    },
+  })
+);
+
     dispatch({
       type: "ADD_ITEM",
       payload: {
