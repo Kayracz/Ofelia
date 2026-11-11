@@ -7,10 +7,13 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError("");
     setLoading(true);
 
@@ -25,38 +28,104 @@ function AdminLogin() {
   }
 
   return (
-    <main className="admin-form-page">
-      <div className="admin-page-heading">
-        <div>
-          <span className="admin-eyebrow">OFELIA</span>
-          <h1>Administración</h1>
-          <p>Inicia sesión para gestionar tu tienda.</p>
+    <main className="ofelia-login-page">
+      <LinkBackToStore />
+
+      <section className="ofelia-login-card">
+        <div className="ofelia-login-brand">
+          <span className="ofelia-login-logo">OFELIA</span>
+          <span className="ofelia-login-brand-subtitle">
+            ADMIN STUDIO
+          </span>
         </div>
-      </div>
 
-      <form className="admin-product-form" onSubmit={handleSubmit}>
-        <label>
-          Contraseña de administrador
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="current-password"
-            required
-          />
-        </label>
+        <div className="ofelia-login-divider" />
 
-        {error && <p role="alert">{error}</p>}
+        <div className="ofelia-login-heading">
+          <p className="ofelia-login-eyebrow">
+            PRIVATE ACCESS · OFELIA STORE
+          </p>
 
-        <button
-          type="submit"
-          className="admin-primary-button"
-          disabled={loading}
+          <h1>Bienvenida de nuevo.</h1>
+
+          <p>
+            Inicia sesión para gestionar tu tienda,
+            tus productos y tus pedidos.
+          </p>
+        </div>
+
+        <form
+          className="ofelia-login-form"
+          onSubmit={handleSubmit}
         >
-          {loading ? "Ingresando..." : "Iniciar sesión"}
-        </button>
-      </form>
+          <label htmlFor="admin-password">
+            Contraseña de administrador
+          </label>
+
+          <div className="ofelia-login-input-wrap">
+            <input
+              id="admin-password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              placeholder="Introduce tu contraseña"
+              required
+              autoFocus
+            />
+
+            <button
+              type="button"
+              className="ofelia-login-toggle"
+              onClick={() => setShowPassword((value) => !value)}
+              aria-label={
+                showPassword
+                  ? "Ocultar contraseña"
+                  : "Mostrar contraseña"
+              }
+            >
+              {showPassword ? "OCULTAR" : "MOSTRAR"}
+            </button>
+          </div>
+
+          {error && (
+            <div className="ofelia-login-error" role="alert">
+              <span>!</span>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="ofelia-login-submit"
+            disabled={loading || !password.trim()}
+          >
+            <span>
+              {loading ? "VERIFICANDO ACCESO..." : "INICIAR SESIÓN"}
+            </span>
+
+            {!loading && <span>↗</span>}
+          </button>
+        </form>
+
+        <div className="ofelia-login-footer">
+          <span>OFELIA</span>
+          <span>ACCESO EXCLUSIVO PARA ADMINISTRADORES</span>
+        </div>
+      </section>
+
+      <p className="ofelia-login-copyright">
+        © OFELIA STORE · ADMIN STUDIO
+      </p>
     </main>
+  );
+}
+
+function LinkBackToStore() {
+  return (
+    <a href="/" className="ofelia-login-back">
+      ← VOLVER A LA TIENDA
+    </a>
   );
 }
 

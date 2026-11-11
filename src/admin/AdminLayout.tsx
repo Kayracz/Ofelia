@@ -1,5 +1,7 @@
+
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { adminLogout } from "../services/adminService";
 
 const adminLinks = [
   { label: "Dashboard", to: "/admin", icon: "⌂", end: true },
@@ -10,6 +12,13 @@ const adminLinks = [
 
 function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    adminLogout();
+    setMenuOpen(false);
+    navigate("/admin/login", { replace: true });
+  }
 
   return (
     <div className="admin-shell">
@@ -83,7 +92,16 @@ function AdminLayout() {
             <span>ADMIN STUDIO</span>
           </div>
 
-          <span className="admin-preview-label">Ofelia Admin</span>
+          <div className="admin-topbar-actions">
+
+            <button
+              type="button"
+              className="admin-logout-button"
+              onClick={handleLogout}
+            >
+              CERRAR SESIÓN <span>↗</span>
+            </button>
+          </div>
         </header>
 
         <main className="admin-content">
