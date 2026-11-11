@@ -106,13 +106,15 @@ function Header() {
           </span>
 
           {totalItems > 0 && (
-            <span
-              className="cart-count"
-              key={`count-${totalItems}`}
-              aria-hidden="true"
-            >
+          <span
+            className="cart-count"
+            key={`count-${totalItems}`}
+            aria-hidden="true"
+          >
+            <span className="cart-count-number">
               {totalItems > 99 ? "99+" : totalItems}
             </span>
+          </span>
           )}
         </Link>
       </div>

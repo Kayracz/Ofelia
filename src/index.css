@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap');
 
 :root {
@@ -762,7 +761,7 @@ footer > div:last-child {
   }
 }
 
-/* OFELIA — EDITORIAL HEADER */
+/* OFELIA â€” EDITORIAL HEADER */
 
 .site-header {
   position: relative;
@@ -813,6 +812,7 @@ footer > div:last-child {
 }
 
 .site-header .header-cart {
+  position: relative;
   grid-column: 3;
   grid-row: 1;
   justify-self: end;
@@ -822,10 +822,6 @@ footer > div:last-child {
   padding: 8px 0 8px 8px;
 }
 
-.site-header .cart-count {
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-}
 
 /* Hamburger */
 
@@ -919,10 +915,6 @@ footer > div:last-child {
     height: 20px;
   }
 
-  .site-header .cart-count {
-    font-size: 10px;
-  }
-
   .site-header .mobile-navigation {
     position: absolute;
     top: 100%;
@@ -1006,7 +998,7 @@ footer > div:last-child {
 
 
 
-/* OFELIA — PRODUCT CATALOG */
+/* OFELIA â€” PRODUCT CATALOG */
 
 .catalog-page {
   padding: 0 5% 100px;
@@ -1270,7 +1262,173 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — PRODUCT DETAIL */
+/* OFELIA HEADER */
+
+.site-header {
+  position: relative;
+  z-index: 50;
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #e8e5e0;
+}
+
+.site-header .header-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  min-height: 106px;
+  padding: 15px 5% 0;
+}
+
+.site-header .header-logo {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 31px;
+  font-weight: 400;
+  letter-spacing: 0.19em;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/* NAVIGATION */
+
+.site-header .desktop-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  padding-bottom: 19px;
+}
+
+.site-header .desktop-navigation a {
+  color: #1c1b19;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+
+/* CART */
+
+.site-header .header-cart {
+  position: relative;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  overflow: visible;
+
+  color: #1c1b19;
+  text-decoration: none;
+}
+
+.site-header .header-cart-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.site-header .header-cart-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* CART BADGE */
+
+.site-header .cart-count {
+  position: absolute;
+    top: 3px;
+    right: -1px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+ min-width: 18px;  
+  height: 18px; 
+  padding: 0 4px;   
+
+  box-sizing: border-box;
+  border-radius: 999px;
+
+  background: #a68b70;
+  color: #fff;
+
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.site-header .cart-count-number {
+  position: relative;
+  left: 2.3px;
+  display: block;
+  line-height: 1;
+  text-align: center;
+}
+/* MOBILE HEADER */
+
+.site-header .menu-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .site-header .header-inner {
+    min-height: 72px;
+    padding: 0 20px;
+  }
+
+  .site-header .header-logo {
+    font-size: 26px;
+  }
+
+  .site-header .desktop-navigation {
+    display: none;
+  }
+
+  .site-header .menu-toggle {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    width: 38px;
+    height: 38px;
+    padding: 8px 5px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .site-header .menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 1px;
+    margin: 6px 0;
+    background: #1c1b19;
+  }
+}
+
+
+
+/* OFELIA â€” PRODUCT DETAIL */
 
 .product-detail-page {
   padding: 0 5%;
@@ -1613,7 +1771,7 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — CART */
+/* OFELIA â€” CART */
 
 .cart-page,
 .checkout-page {
@@ -1846,7 +2004,7 @@ footer > div:last-child {
   letter-spacing: 0.1em;
 }
 
-/* OFELIA — CHECKOUT */
+/* OFELIA â€” CHECKOUT */
 
 .checkout-heading {
   padding-bottom: 45px;
@@ -2150,7 +2308,7 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — ORDER CONFIRMATION */
+/* OFELIA â€” ORDER CONFIRMATION */
 
 .confirmation-page {
   padding: 0 5% 100px;
@@ -2462,7 +2620,7 @@ footer > div:last-child {
   }
 }
 
-/* OFELIA — ABOUT PAGE */
+/* OFELIA â€” ABOUT PAGE */
 
 .about-page {
   overflow: hidden;
@@ -2713,7 +2871,7 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — ADMIN STUDIO */
+/* OFELIA â€” ADMIN STUDIO */
 
 .admin-shell {
   --admin-bg: #f8f7f4;
@@ -3820,7 +3978,7 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — EDITORIAL IMAGES ADMIN */
+/* OFELIA â€” EDITORIAL IMAGES ADMIN */
 
 .admin-site-images {
   width: 100%;
@@ -4053,7 +4211,7 @@ footer > div:last-child {
   inset: 0;
 }
 
-/* OFELIA — FIX IMÁGENES EDITORIALES */
+/* OFELIA â€” FIX IMÃGENES EDITORIALES */
 
 .story-image-placeholder,
 .styling-image-placeholder {
@@ -4119,7 +4277,7 @@ footer > div:last-child {
 }
 
 
-/* OFELIA — ADMIN ORDERS */
+/* OFELIA â€” ADMIN ORDERS */
 
 .admin-orders-page {
   width: 100%;
@@ -4702,7 +4860,7 @@ footer > div:last-child {
 
 
 /* ======================================
-   OFELIA ADMIN — LOGIN
+   OFELIA ADMIN â€” LOGIN
 ====================================== */
 
 .ofelia-login-page {
@@ -4997,182 +5155,92 @@ footer > div:last-child {
 }
 
 
-/* Header shopping cart */
+/* OFELIA â€” CART FEEDBACK
+   Consolidated styles: one source of truth for the cart icon, badge and toast.
+*/
 
-.header-cart {
+.site-header .header-cart {
   position: relative;
   display: inline-flex;
+  flex: 0 0 42px;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  justify-self: end;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  overflow: visible;
   color: inherit;
   text-decoration: none;
 }
 
-.header-cart-icon {
+.site-header .header-cart-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 24px;
+  height: 24px;
   transform-origin: center;
+  animation: ofelia-cart-bounce 0.48s ease;
 }
 
-/* Bounce when the cart quantity changes */
-.header-cart-icon {
-  animation: cartBounce 0.5s ease;
+.site-header .header-cart-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
 }
 
-@keyframes cartBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  25% {
-    transform: translateY(-5px) scale(1.08);
-  }
-  50% {
-    transform: translateY(0) scale(0.96);
-  }
-  75% {
-    transform: translateY(-2px) scale(1.03);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
+/* The number is centered independently of the badge dimensions. */
 
-/* Quantity badge */
-.cart-count {
-  position: absolute;
-  top: -3px;
-  right: -5px;
-  min-width: 19px;
-  height: 19px;
-  padding: 0 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50px;
-  background: #a68b70;
-  color: #fff;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-  animation: cartBadgePop 0.35s ease both;
-}
-
-@keyframes cartBadgePop {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .header-cart-icon,
-  .cart-count {
-    animation: none;
-  }
-}
-
-/* Cart icon alignment */
-.header-cart {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.header-cart-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: cartBounce 0.5s ease;
-}
-
-.cart-count {
-  position: absolute;
-  top: 0;
-  right: 0;
-  transform: translate(30%, -20%);
-  min-width: 19px;
-  height: 19px;
-  padding: 0 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  background: #a68b70;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-  animation: cartBadgePop 0.35s ease both;
-}
-
-@keyframes cartBounce {
+@keyframes ofelia-cart-bounce {
   0%, 100% { transform: translateY(0); }
-  35% { transform: translateY(-5px); }
-  65% { transform: translateY(2px); }
+  35% { transform: translateY(-4px); }
+  65% { transform: translateY(1px); }
 }
 
-@keyframes cartBadgePop {
-  0% { opacity: 0; scale: 0.4; }
-  70% { opacity: 1; scale: 1.2; }
-  100% { opacity: 1; scale: 1; }
+@keyframes ofelia-cart-badge-pop {
+  0% { opacity: 0; transform: scale(0.55); }
+  70% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-/* Add to cart notification */
+/* Confirmation shown even when the header/cart is out of view. */
 .cart-toast {
   position: fixed;
   z-index: 10000;
   bottom: 28px;
   left: 50%;
-  width: min(460px, calc(100% - 32px));
-  padding: 17px 42px 17px 17px;
   display: flex;
   align-items: center;
   gap: 13px;
+  width: min(460px, calc(100% - 32px));
+  padding: 17px 42px 17px 17px;
+  border: 1px solid #e8e2d9;
   background: #fff;
   color: #292722;
-  border: 1px solid #e8e2d9;
-  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.13);
+  box-shadow: 0 8px 35px rgb(0 0 0 / 13%);
   transform: translateX(-50%);
-  animation: toastEnter 0.4s ease both;
+  animation: ofelia-toast-enter 0.35s ease both;
 }
 
 .cart-toast-icon {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
   display: flex;
+  flex: 0 0 36px;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #f3eee8;
   color: #987b5f;
 }
 
 .cart-toast-content {
-  min-width: 0;
-  flex: 1;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .cart-toast-content strong {
@@ -5181,15 +5249,15 @@ footer > div:last-child {
 }
 
 .cart-toast-content span {
+  overflow: hidden;
   color: #77716a;
   font-size: 11px;
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cart-toast-link {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   color: #987b5f;
   font-size: 10px;
   font-weight: 600;
@@ -5202,17 +5270,19 @@ footer > div:last-child {
   position: absolute;
   top: 5px;
   right: 9px;
+  padding: 0 4px;
   border: 0;
   background: transparent;
   color: #777;
   font-size: 20px;
+  line-height: 1;
   cursor: pointer;
 }
 
-@keyframes toastEnter {
+@keyframes ofelia-toast-enter {
   from {
     opacity: 0;
-    transform: translate(-50%, 20px);
+    transform: translate(-50%, 16px);
   }
   to {
     opacity: 1;
@@ -5221,6 +5291,12 @@ footer > div:last-child {
 }
 
 @media (max-width: 480px) {
+  .site-header .header-cart {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
   .cart-toast {
     bottom: 16px;
     gap: 9px;
@@ -5233,10 +5309,9 @@ footer > div:last-child {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header-cart-icon,
-  .cart-count,
+  .site-header .header-cart-icon,
+  .site-header .cart-count,
   .cart-toast {
-    animation: none;
+    animation: none !important;
   }
 }
-
