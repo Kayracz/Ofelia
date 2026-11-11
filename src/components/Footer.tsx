@@ -10,8 +10,7 @@ function Footer() {
           <h2>OFELIA</h2>
 
           <p>
-            Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
+          THE OFELIA COLLECTION
           </p>
         </div>
 

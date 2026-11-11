@@ -11,10 +11,10 @@ function Home() {
     .slice(0, 4);
 
   const stylingLabels = [
-    "Around the neck",
-    "In your hair",
-    "On your bag",
-    "As a top",
+    "Alrededor del cuello",
+    "En el cabello",
+    "En tu bolso",
+    "Como top",
   ];
 
   return (
