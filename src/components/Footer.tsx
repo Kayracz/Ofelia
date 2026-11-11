@@ -50,21 +50,41 @@ function Footer() {
           </Link>
         </div>
 
-        <div>
-          <h3>CONTACTO</h3>
 
-          <p>
-            Tiktok
-          </p>
+      <div>
+        <h3>CONTACTO</h3>
 
-          <p>
+        <p>
+          <a
+            href="https://www.tiktok.com/@weareofelia"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TikTok
+          </a>
+        </p>
+
+        <p>
+          <a
+            href="https://wa.me/59175086484"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             WhatsApp
-          </p>
+          </a>
+        </p>
 
-          <p>
+        <p>
+          <a
+            href="https://www.instagram.com/weareofelia/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Instagram
-          </p>
-        </div>
+          </a>
+        </p>
+      </div>
+
 
       </div>
 

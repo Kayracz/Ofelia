@@ -5,10 +5,7 @@ import {
   type ReactNode,
 } from "react";
 
-import {
-  products as initialProducts,
-  type Product,
-} from "../data/products";
+import type { Product } from "../data/products";
 
 import { getProducts } from "../services/productService";
 
@@ -22,8 +19,6 @@ import {
   ProductsContext,
   type ProductsContextValue,
 } from "./ProductsContextValue";
-
-const STORAGE_KEY = "ofelia-products";
 
 interface ProductVariant {
   label: string;
@@ -42,30 +37,7 @@ interface ProductsProviderProps {
   children: ReactNode;
 }
 
-function getInitialProducts(): Product[] {
-  try {
-    const savedProducts = localStorage.getItem(STORAGE_KEY);
-
-    if (savedProducts) {
-      const parsed: unknown = JSON.parse(savedProducts);
-
-      if (Array.isArray(parsed)) {
-        return parsed as Product[];
-      }
-    }
-  } catch (error) {
-    console.error(
-      "No se pudieron cargar los productos:",
-      error
-    );
-  }
-
-  return initialProducts;
-}
-
-function normalizeProduct(
-  product: Product
-): Product {
+function normalizeProduct(product: Product): Product {
   const productWithVariants =
     product as ProductWithVariants;
 
@@ -83,10 +55,9 @@ function normalizeProduct(
 export function ProductsProvider({
   children,
 }: ProductsProviderProps) {
-  const [products, setProducts] =
-    useState<Product[]>(getInitialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  // Load products from MongoDB API
+  // Load products exclusively from MongoDB
   useEffect(() => {
     let cancelled = false;
 
@@ -96,14 +67,16 @@ export function ProductsProvider({
 
         if (cancelled) return;
 
-        setProducts(
-          apiProducts.map(normalizeProduct)
-        );
+        setProducts(apiProducts.map(normalizeProduct));
       } catch (error) {
         console.error(
-          "No se pudieron cargar los productos de la API. Se conserva el catálogo local.",
+          "Could not load products from the API:",
           error
         );
+
+        if (!cancelled) {
+          setProducts([]);
+        }
       }
     }
 
@@ -113,21 +86,6 @@ export function ProductsProvider({
       cancelled = true;
     };
   }, []);
-
-  // Save products in localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(products)
-      );
-    } catch (error) {
-      console.error(
-        "No se pudieron guardar los productos localmente:",
-        error
-      );
-    }
-  }, [products]);
 
   // Add product
   async function addProduct(
@@ -139,8 +97,8 @@ export function ProductsProvider({
       normalizeProduct(createdProduct);
 
     setProducts((current) => [
-      ...current,
       normalizedProduct,
+      ...current,
     ]);
 
     return normalizedProduct;
