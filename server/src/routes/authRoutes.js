@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
+const SESSION_DURATION = "30d";
+
 router.post("/login", (req, res) => {
   const { password } = req.body;
 
@@ -25,12 +27,12 @@ router.post("/login", (req, res) => {
   const token = jwt.sign(
     { role: "admin" },
     process.env.JWT_SECRET,
-    { expiresIn: "2h" }
+    { expiresIn: SESSION_DURATION }
   );
 
   return res.json({
     token,
-    expiresIn: 7200,
+    expiresIn: 30 * 24 * 60 * 60,
   });
 });
 

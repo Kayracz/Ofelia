@@ -4,8 +4,15 @@ const jwt = require("jsonwebtoken");
 function requireAdmin(req, res, next) {
   const authorization = req.headers.authorization;
 
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({
+      message: "La autenticación no está configurada en el servidor.",
+    });
+  }
+
   if (!authorization || !authorization.startsWith("Bearer ")) {
     return res.status(401).json({
+      code: "AUTH_REQUIRED",
       message: "Debes iniciar sesión como administrador.",
     });
   }
@@ -21,10 +28,19 @@ function requireAdmin(req, res, next) {
       });
     }
 
+    req.admin = decoded;
     next();
-  } catch {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        code: "SESSION_EXPIRED",
+        message: "Tu sesión ha caducado. Inicia sesión nuevamente.",
+      });
+    }
+
     return res.status(401).json({
-      message: "La sesión no es válida o ha caducado.",
+      code: "INVALID_SESSION",
+      message: "Tu sesión no es válida. Inicia sesión nuevamente.",
     });
   }
 }

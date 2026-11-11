@@ -1,9 +1,7 @@
 
-import axios from "axios";
-import { getAdminToken } from "./adminService";
+import { adminApi, getAdminToken } from "./adminService";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:4000";
+const ORDERS_URL = "/api/orders";
 
 export interface AdminOrder {
   _id: string;
@@ -34,15 +32,13 @@ export interface AdminOrder {
   createdAt: string;
 }
 
-const api = axios.create({
-  baseURL: `${API_URL}/api/orders`,
-});
-
 function getHeaders() {
   const token = getAdminToken();
 
   if (!token) {
-    throw new Error("Inicia sesión como administrador para ver los pedidos.");
+    throw new Error(
+      "Tu sesión de administrador no está activa. Inicia sesión nuevamente."
+    );
   }
 
   return {
@@ -51,7 +47,7 @@ function getHeaders() {
 }
 
 export async function getAdminOrders(): Promise<AdminOrder[]> {
-  const response = await api.get<AdminOrder[]>("/", {
+  const response = await adminApi.get<AdminOrder[]>(ORDERS_URL, {
     headers: getHeaders(),
   });
 
@@ -62,8 +58,8 @@ export async function updateAdminOrderStatus(
   id: string,
   status: AdminOrder["status"]
 ): Promise<void> {
-  await api.patch(
-    `/${id}/status`,
+  await adminApi.patch(
+    `${ORDERS_URL}/${id}/status`,
     { status },
     { headers: getHeaders() }
   );
