@@ -54,6 +54,10 @@ export async function getAdminOrders(): Promise<AdminOrder[]> {
   return response.data;
 }
 
+export async function deleteAdminOrder(id: string) {
+  await adminApi.delete(`/api/orders/${id}`);
+}
+
 export async function updateAdminOrderStatus(
   id: string,
   status: AdminOrder["status"]

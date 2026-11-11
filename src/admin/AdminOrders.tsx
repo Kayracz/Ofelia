@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getAdminOrders,
   updateAdminOrderStatus,
+  deleteAdminOrder,
   type AdminOrder,
 } from "../services/orderAdminService";
 
@@ -33,6 +34,7 @@ function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -111,13 +113,40 @@ useEffect(() => {
     }
   }
 
+  async function handleDeleteOrder(order: AdminOrder) {
+    const confirmed = window.confirm(
+      `¿Estás segura de que deseas eliminar el pedido ${order.orderNumber}?\n\nEsta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(order._id);
+    setError("");
+
+    try {
+      await deleteAdminOrder(order._id);
+
+      setOrders((current) =>
+        current.filter((item) => item._id !== order._id)
+      );
+    } catch {
+      setError(
+        `No se pudo eliminar el pedido ${order.orderNumber}. Comprueba tu sesión y la conexión con el servidor.`
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <section className="admin-orders-page">
       <div className="admin-page-heading">
         <div>
           <p className="admin-eyebrow">ADMIN STUDIO / PEDIDOS</p>
           <h1>Pedidos</h1>
-          <p>Gestiona las compras, los clientes y los estados de los pedidos.</p>
+          <p>
+            Gestiona las compras, los clientes y los estados de los pedidos.
+          </p>
         </div>
 
         <button
@@ -135,12 +164,14 @@ useEffect(() => {
           <span>Total de pedidos</span>
           <strong>{orders.length}</strong>
         </div>
+
         <div>
           <span>Pendientes</span>
           <strong>
             {orders.filter((order) => order.status === "pendiente").length}
           </strong>
         </div>
+
         <div>
           <span>Pagados</span>
           <strong>
@@ -204,7 +235,9 @@ useEffect(() => {
                   <p>
                     {order.delivery.city}, {order.delivery.department}
                   </p>
-                  {order.delivery.address && <p>{order.delivery.address}</p>}
+                  {order.delivery.address && (
+                    <p>{order.delivery.address}</p>
+                  )}
                   {order.delivery.reference && (
                     <p>Referencia: {order.delivery.reference}</p>
                   )}
@@ -247,7 +280,10 @@ useEffect(() => {
                   Estado del pedido
                   <select
                     value={order.status}
-                    disabled={updatingId === order._id}
+                    disabled={
+                      updatingId === order._id ||
+                      deletingId === order._id
+                    }
                     onChange={(event) =>
                       void handleStatusChange(
                         order,
@@ -266,6 +302,22 @@ useEffect(() => {
                     <span>Guardando cambio...</span>
                   )}
                 </label>
+              </div>
+
+              <div className="admin-order-actions">
+                <button
+                  type="button"
+                  className="admin-order-delete-button"
+                  onClick={() => void handleDeleteOrder(order)}
+                  disabled={
+                    deletingId === order._id ||
+                    updatingId === order._id
+                  }
+                >
+                  {deletingId === order._id
+                    ? "Eliminando..."
+                    : "Eliminar pedido"}
+                </button>
               </div>
             </article>
           ))}

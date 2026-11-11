@@ -4967,3 +4967,32 @@ footer > div:last-child {
   }
 }
 
+.admin-order-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eeeeea;
+}
+
+.admin-order-delete-button {
+  border: 1px solid #d8b8b4;
+  background: transparent;
+  color: #a34f48;
+  padding: 10px 16px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-order-delete-button:hover:not(:disabled) {
+  background: #a34f48;
+  color: white;
+}
+
+.admin-order-delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

@@ -252,4 +252,27 @@ router.patch("/:id/status", requireAdmin, async (req, res) => {
   }
 });
 
+// Eliminar un pedido
+router.delete("/:id", requireAdmin, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndDelete(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: "No se encontró el pedido.",
+      });
+    }
+
+    return res.json({
+      message: "Pedido eliminado correctamente.",
+    });
+  } catch (error) {
+    console.error("Error al eliminar pedido:", error);
+
+    return res.status(500).json({
+      message: "No se pudo eliminar el pedido.",
+    });
+  }
+});
+
 module.exports = router;
