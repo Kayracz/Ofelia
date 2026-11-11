@@ -59,8 +59,8 @@ function Checkout() {
       address: formData.address.trim(),
       reference: formData.reference.trim(),
 
-      // Send the selected variation with each item.
-      // The backend will verify its price.
+      // Enviar la variante seleccionada.
+      // El backend verifica el precio.
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -87,39 +87,37 @@ function Checkout() {
 
       clearCart();
       navigate("/confirmacion");
-    
-} catch (error: unknown) {
-  console.error("Error completo al registrar pedido:", error);
+    } catch (error: unknown) {
+      console.error("Error completo al registrar pedido:", error);
 
-  const err = error as {
-    response?: {
-      status?: number;
-      data?: {
+      const err = error as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+            error?: string;
+          };
+        };
         message?: string;
-        error?: string;
       };
-    };
-    message?: string;
-  };
 
-  const serverMessage =
-    err.response?.data?.message ||
-    err.response?.data?.error ||
-    err.message ||
-    "Error desconocido";
+      const serverMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Error desconocido";
 
-  console.error("HTTP status:", err.response?.status);
-  console.error("Respuesta del servidor:", err.response?.data);
+      console.error("HTTP status:", err.response?.status);
+      console.error("Respuesta del servidor:", err.response?.data);
 
-  setError(
-    `No se pudo registrar el pedido: ${serverMessage} ${
-      err.response?.status
-        ? `(HTTP ${err.response.status})`
-        : ""
-    }`
-  );
-}
- finally {
+      setError(
+        `No se pudo registrar el pedido: ${serverMessage} ${
+          err.response?.status
+            ? `(HTTP ${err.response.status})`
+            : ""
+        }`
+      );
+    } finally {
       setSubmitting(false);
     }
   };
@@ -145,6 +143,8 @@ function Checkout() {
 
       <div className="checkout-layout">
         <form className="checkout-form" onSubmit={handleSubmit}>
+          {/* DATOS PERSONALES */}
+
           <section className="checkout-section">
             <p className="checkout-section-number">01</p>
 
@@ -206,6 +206,8 @@ function Checkout() {
               </div>
             </div>
           </section>
+
+          {/* ENTREGA */}
 
           <section className="checkout-section">
             <p className="checkout-section-number">02</p>
@@ -273,6 +275,8 @@ function Checkout() {
                 </label>
               </div>
 
+              {/* OPCIONES DE ENTREGA */}
+
               <div className="delivery-options">
                 <label
                   className={
@@ -319,33 +323,61 @@ function Checkout() {
             </div>
           </section>
 
+          {/* COORDINACIÓN POR WHATSAPP */}
+
+          <section className="checkout-whatsapp-info">
+            <h3>Coordinación del pedido</h3>
+
+            <p>
+              Una vez guardados tus datos, podrás continuar por
+              WhatsApp para coordinar el pago y la entrega de tu pedido.
+            </p>
+
+            <div className="checkout-whatsapp-label">
+              <span>◉</span>
+              <span>
+                Continuar por WhatsApp después de registrar
+              </span>
+            </div>
+          </section>
+
+          {/* ERRORES */}
+
           {error && (
             <p className="admin-upload-error" role="alert">
               {error}
             </p>
           )}
 
+          {/* BOTÓN DE REGISTRO */}
+
           <button
             type="submit"
             className="checkout-submit"
             disabled={submitting}
           >
-            {submitting ? "REGISTRANDO PEDIDO..." : "CONFIRMAR PEDIDO"}
+            {submitting
+              ? "GUARDANDO TUS DATOS..."
+              : "GUARDAR MIS DATOS Y CONTINUAR"}
+
             {!submitting && <span> ↗</span>}
           </button>
 
           <p className="checkout-legal-note">
-            Tu pedido se registrará y podrás coordinar los siguientes
-            pasos por WhatsApp.
+            Tu pedido quedará registrado y pendiente de pago.
+            La compra se confirmará una vez coordinado y verificado el pago.
           </p>
         </form>
+
+        {/* RESUMEN DEL PEDIDO */}
 
         <aside className="checkout-summary">
           <p className="eyebrow">YOUR SELECTION</p>
           <h2>Resumen del pedido</h2>
 
           {items.map((item) => {
-            const itemPrice = item.variant?.price ?? item.product.price;
+            const itemPrice =
+              item.variant?.price ?? item.product.price;
 
             const itemImage =
               item.product.images?.[0] ||
@@ -395,6 +427,7 @@ function Checkout() {
 
           <div className="checkout-summary-total">
             <span>Subtotal</span>
+
             <strong>
               {totalPrice.toLocaleString("es-BO", {
                 style: "currency",
